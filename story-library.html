@@ -1,0 +1,3377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Story Library</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --accent: #6c63ff;
+    --text: #e8eaf6;
+    --muted: #7b7f94;
+    --input-bg: #12141e;
+    --green: #43e97b;
+    --yellow: #ffd166;
+    --red: #ef476f;
+    --a0: #38ecec; --a0bg: rgba(56,236,236,.12);
+    --a1: #43e97b; --a1bg: rgba(67,233,123,.12);
+    --b1: #ffd166; --b1bg: rgba(255,209,102,.12);
+    --c1: #ef476f; --c1bg: rgba(239,71,111,.12);
+    --c2: #b44fff; --c2bg: rgba(180,79,255,.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .logo span { color: var(--text); font-weight: 400; font-size: 14px; margin-right: 10px; }
+  .api-row { display: flex; gap: 8px; align-items: center; }
+  .api-row input {
+    background: var(--input-bg); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 10px; border-radius: 8px; font-size: 13px; width: 230px; outline: none;
+  }
+  .api-row input:focus { border-color: var(--accent); }
+  .save-btn { background: var(--accent); color: #fff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+
+  /* LIBRARY */
+  #library { padding: 24px; max-width: 1000px; margin: 0 auto; }
+  .level-filter { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
+  .level-filter span { font-size: 14px; color: var(--muted); }
+  .filter-btn {
+    padding: 7px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 2px solid transparent; transition: all .2s;
+    background: var(--card);
+  }
+  .filter-btn.all { color: var(--text); border-color: var(--border); }
+  .filter-btn.all.active, .filter-btn.all:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.a0 { color: var(--a0); border-color: var(--a0bg); }
+  .filter-btn.a0.active, .filter-btn.a0:hover { background: var(--a0bg); border-color: var(--a0); }
+  .filter-btn.a1 { color: var(--a1); border-color: var(--a1bg); }
+  .filter-btn.a1.active, .filter-btn.a1:hover { background: var(--a1bg); border-color: var(--a1); }
+  .filter-btn.b1 { color: var(--b1); border-color: var(--b1bg); }
+  .filter-btn.b1.active, .filter-btn.b1:hover { background: var(--b1bg); border-color: var(--b1); }
+  .filter-btn.c1 { color: var(--c1); border-color: var(--c1bg); }
+  .filter-btn.c1.active, .filter-btn.c1:hover { background: var(--c1bg); border-color: var(--c1); }
+  .filter-btn.c2 { color: var(--c2); border-color: var(--c2bg); }
+  .filter-btn.c2.active, .filter-btn.c2:hover { background: var(--c2bg); border-color: var(--c2); }
+
+  .stories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .story-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
+  }
+  .story-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .story-card::before {
+    content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%;
+  }
+  .story-card.a0::before { background: var(--a0); }
+  .story-card.a1::before { background: var(--a1); }
+  .story-card.b1::before { background: var(--b1); }
+  .story-card.c1::before { background: var(--c1); }
+  .story-card.c2::before { background: var(--c2); }
+  .card-level {
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+    display: inline-block; margin-bottom: 10px;
+  }
+  .a0 .card-level { background: var(--a0bg); color: var(--a0); }
+  .a1 .card-level { background: var(--a1bg); color: var(--a1); }
+  .b1 .card-level { background: var(--b1bg); color: var(--b1); }
+  .c1 .card-level { background: var(--c1bg); color: var(--c1); }
+  .c2 .card-level { background: var(--c2bg); color: var(--c2); }
+  .card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .card-preview { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .card-meta { display: flex; gap: 12px; margin-top: 12px; align-items: center; }
+  .card-meta span { font-size: 12px; color: var(--muted); }
+  .read-btn {
+    margin-left: auto; background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-size: 12px; padding: 3px 10px; border-radius: 20px;
+    cursor: pointer; transition: all .2s; white-space: nowrap;
+  }
+  .read-btn:hover { border-color: #43e97b; color: #43e97b; }
+  .story-card.read-card { opacity: 0.55; }
+  .story-card.read-card .read-btn { border-color: #43e97b; color: #43e97b; background: rgba(67,233,123,.1); }
+  .read-badge {
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(67,233,123,.15); color: #43e97b;
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+  }
+
+  /* READER */
+  #reader { display: none; padding: 24px; max-width: 700px; margin: 0 auto; }
+  .reader-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+  .back-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 16px; border-radius: 10px; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; gap: 6px; transition: all .2s;
+  }
+  .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .reader-title { font-size: 22px; font-weight: 700; }
+  .reader-level { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .reader-hint {
+    background: rgba(108,99,255,.1); border: 1px solid rgba(108,99,255,.2);
+    border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--muted);
+    margin-bottom: 20px; direction: rtl; text-align: right; line-height: 1.7;
+  }
+  .reader-hint strong { color: var(--accent); }
+
+  /* STORY TEXT */
+  .story-body {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 28px 32px; font-size: 18px; line-height: 2; color: var(--text);
+    position: relative; user-select: text;
+  }
+  .story-body p { margin-bottom: 8px; position: relative; }
+  .story-body p:last-child { margin-bottom: 0; }
+  .word { cursor: pointer; border-radius: 3px; transition: background .15s; }
+  .word:hover { background: rgba(108,99,255,.2); }
+  .word.translated { background: rgba(108,99,255,.25); color: #fff; }
+  .para-wrap { margin-bottom: 20px; }
+  .para-translate-btn {
+    display: inline-block; margin-top: 4px; margin-right: 4px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-size: 12px; padding: 3px 10px;
+    border-radius: 20px; cursor: pointer; transition: all .2s;
+  }
+  .para-translate-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .para-translate-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .para-translation {
+    background: rgba(108,99,255,.08); border: 1px solid rgba(108,99,255,.2);
+    border-radius: 8px; padding: 8px 12px; font-size: 15px;
+    color: var(--yellow); direction: rtl; text-align: right;
+    margin-top: 6px; line-height: 1.7; display: none;
+  }
+  .para-translation.visible { display: block; animation: fadeIn .2s; }
+
+  /* WORD TOOLTIP */
+  #wordTooltip {
+    position: fixed; z-index: 1000; background: #2a1f6e; border: 1px solid var(--accent);
+    border-radius: 10px; padding: 8px 14px; font-size: 14px; color: #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4); pointer-events: none;
+    opacity: 0; transition: opacity .15s; max-width: 200px; text-align: center;
+  }
+  #wordTooltip.visible { opacity: 1; }
+  #wordTooltip .heb { font-size: 16px; font-weight: 700; direction: rtl; }
+  #wordTooltip .eng { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 2px; }
+
+  /* SENTENCE TRANSLATION */
+  #sentenceBar {
+    position: fixed; bottom: 0; right: 0; left: 0; z-index: 200;
+    background: var(--card); border-top: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    transform: translateY(100%); transition: transform .25s ease;
+  }
+  #sentenceBar.visible { transform: translateY(0); }
+  .sentence-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .sentence-selected { font-size: 14px; color: var(--text); opacity: .7; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .translate-btn {
+    background: linear-gradient(135deg, #6c63ff, #8b5cf6);
+    color: #fff; border: none; padding: 8px 20px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+  .translate-btn:disabled { opacity: .5; }
+  #sentenceResult {
+    font-size: 15px; font-weight: 600; color: var(--yellow); direction: rtl;
+    flex: 1; min-width: 200px; text-align: right;
+  }
+  .dismiss-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .dismiss-btn:hover { color: var(--text); border-color: var(--text); }
+
+  /* SPINNER */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .story-card { animation: fadeIn .2s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">📚 Story Library <span>לחץ על מילה לתרגום | סמן משפט לתרגום</span></div>
+  <div class="api-row">
+    <input type="password" id="apiKey" placeholder="sk-ant-...">
+    <button class="save-btn" onclick="saveKey()">שמור מפתח</button>
+  </div>
+</header>
+
+<!-- WORD TOOLTIP -->
+<div id="wordTooltip">
+  <div class="heb" id="tooltipHeb">...</div>
+  <div class="eng" id="tooltipEng"></div>
+</div>
+
+
+<!-- LIBRARY VIEW -->
+<div id="library">
+  <div class="level-filter">
+    <span>רמה:</span>
+    <button class="filter-btn all active" onclick="filterStories('all', this)">הכל</button>
+    <button class="filter-btn all" onclick="filterStories('read', this)">✅ נקרא</button>
+    <button class="filter-btn a0" onclick="filterStories('a0', this)">🔵 ממש קל</button>
+    <button class="filter-btn a1" onclick="filterStories('a1', this)">🟢 ילדים</button>
+    <button class="filter-btn b1" onclick="filterStories('b1', this)">🟡 B1–B2 בינוני</button>
+    <button class="filter-btn c1" onclick="filterStories('c1', this)">🔴 C1 קשה</button>
+    <button class="filter-btn c2" onclick="filterStories('c2', this)">🟣 C2 קשה מאד</button>
+  </div>
+  <div class="stories-grid" id="storiesGrid"></div>
+</div>
+
+<!-- READER VIEW -->
+<div id="reader">
+  <div class="reader-header">
+    <button class="back-btn" onclick="backToLibrary()">← חזרה לספרייה</button>
+    <button class="read-btn" id="readerReadBtn" onclick="toggleReadFromReader()" style="margin-right:auto;padding:7px 16px;font-size:13px;border-radius:10px;"></button>
+    <div>
+      <div class="reader-title" id="readerTitle"></div>
+    </div>
+    <span class="reader-level" id="readerLevel"></span>
+  </div>
+  <div class="reader-hint">
+    <strong>💡 איך משתמשים:</strong>
+    לחץ על <strong>מילה בודדת</strong> לתרגום מיידי לעברית •
+    <strong>סמן משפט</strong> (גרור עם העכבר) לתרגום המשפט המלא
+  </div>
+  <div class="story-body" id="storyBody"></div>
+</div>
+
+<script>
+// ─── STORIES DATA ──────────────────────────────────────────────────────────
+const STORIES = [
+  // ── A1–A2 ──────────────────────────────────────────────────────────────
+  {
+    id: 1, level: 'a1', levelLabel: 'ילדים',
+    title: 'My Perfect Morning',
+    preview: 'Every day I wake up at seven. I make coffee and sit by the window...',
+    words: 210, mins: 2,
+    text: `Every day I wake up at seven o'clock. The alarm rings and I turn it off quickly. I lie in bed for one minute, then I get up.
+
+First, I go to the kitchen. I make coffee. The smell of coffee is wonderful. I sit by the window and look outside. The sky is blue and the sun is bright.
+
+Then I eat breakfast. Today I have eggs and toast. My cat, Luna, sits next to me. She wants my food, but I say no.
+
+After breakfast, I wash my face and brush my teeth. I put on my clothes and look in the mirror. I am ready.
+
+I walk to work. It is not far — only fifteen minutes. On the way, I say hello to my neighbor, Mrs. Cohen. She is always outside in the morning with her small dog.
+
+I arrive at work at eight thirty. My desk is near the window. I turn on my computer and drink the last of my coffee.
+
+Today is a good day. I can feel it.`
+  },
+  {
+    id: 2, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Lost Dog',
+    preview: 'A small brown dog was sitting alone in the park. He looked sad and hungry...',
+    words: 195, mins: 2,
+    text: `A small brown dog was sitting alone in the park. He looked sad and hungry. His name was written on a blue collar around his neck: "Max."
+
+A girl named Noa was walking home from school. She saw the dog and stopped. Max looked at her with big brown eyes.
+
+"Are you lost?" Noa asked. Max did not answer, of course. But he wagged his tail.
+
+Noa took out her phone and called the number on his collar. It rang three times.
+
+A man answered. "Hello?"
+
+"Hello," said Noa. "I found your dog. His name is Max. He is in the park near the supermarket."
+
+"Oh, thank you!" said the man. His voice was very happy. "I am coming now!"
+
+Ten minutes later, a man ran to the park. He had gray hair and a big smile. When Max saw him, the dog jumped and barked.
+
+"Max! Good boy!" The man hugged the dog tightly.
+
+He turned to Noa. "Thank you so much. I was worried all day."
+
+Noa smiled. "I'm happy he's okay."
+
+She walked home feeling warm inside.`
+  },
+  {
+    id: 3, level: 'a1', levelLabel: 'ילדים',
+    title: 'A New Neighbor',
+    preview: 'The apartment next to mine was empty for two months. Then one Tuesday, someone moved in...',
+    words: 220, mins: 2,
+    text: `The apartment next to mine was empty for two months. Then one Tuesday morning, I heard noise — boxes moving, footsteps, a door opening and closing.
+
+Someone moved in.
+
+That evening, I knocked on the door. A young woman opened it. She had short dark hair and paint on her hands.
+
+"Hi," I said. "I live next door. My name is Daniel."
+
+"I'm Sara," she said with a smile. "Sorry for the mess. I'm still unpacking."
+
+"No problem. Welcome to the building." I gave her a small plant. "It's for good luck."
+
+Sara looked surprised. "Oh! That's so kind. Thank you."
+
+We talked for a few minutes at the door. She told me she was an artist. She moved to the city for a new job at a design studio.
+
+"It's a big change," she said.
+
+"It gets easier," I said. "The neighbors are friendly. And there's a great coffee shop on the corner."
+
+Sara laughed. "That's good to know. Coffee is very important to me."
+
+I said goodnight and went back to my apartment. As I closed my door, I heard music coming from next door — something soft and happy.
+
+It was nice to have a neighbor again.`
+  },
+
+  // ── B1–B2 ──────────────────────────────────────────────────────────────
+  {
+    id: 4, level: 'b1', levelLabel: 'B1 – Intermediate',
+    title: 'The Job Interview',
+    preview: 'David had been unemployed for three months. The email arrived on a Thursday morning...',
+    words: 270, mins: 3,
+    text: `David had been unemployed for three months when the email arrived on a Thursday morning. It was short and formal: "We would like to invite you for an interview next Monday at 10am."
+
+He read it three times to make sure it was real.
+
+On Monday, he wore his best shirt — the dark blue one he usually kept for weddings. He left the house forty minutes early, even though the office was only twenty minutes away. He didn't want to be late.
+
+The waiting room was modern and quiet. Three other people sat in chairs, each holding a folder or a phone. David noticed his leg was bouncing. He pressed it still with his hand.
+
+The interviewer was a woman named Yael. She had kind eyes but asked difficult questions. "Tell me about a time you failed at something and what you learned from it."
+
+David thought of several answers. He chose the honest one.
+
+He talked about a project that went wrong two years ago — a deadline he missed, the team that suffered because of it. He described how he fixed the process afterwards, and why he now kept a detailed calendar.
+
+Yael wrote something down. David couldn't tell if it was good or bad.
+
+"We'll be in touch by the end of the week," she said at the end.
+
+Walking home, David felt something unexpected — not anxiety, but calm. Whatever happened, he had been honest. He had shown up.
+
+That felt like enough.`
+  },
+  {
+    id: 5, level: 'b1', levelLabel: 'B1 – Intermediate',
+    title: 'The Unexpected Visitor',
+    preview: 'It was almost midnight when someone knocked on Rachel\'s door. She wasn\'t expecting anyone...',
+    words: 260, mins: 3,
+    text: `It was almost midnight when someone knocked on Rachel's door. She wasn't expecting anyone — she had been planning a quiet evening with a book and herbal tea.
+
+Through the peephole, she saw her younger brother, Avi. He was standing in the hallway with a backpack and an expression she recognized immediately: the look he had whenever something had gone wrong.
+
+She opened the door.
+
+"I need to sleep here tonight," he said. Not a question.
+
+"Of course," she said. "Come in."
+
+She made him a sandwich even though he said he wasn't hungry. He ate the whole thing. She made another. He ate that too.
+
+They sat at the kitchen table for a long time without talking much. That was the thing about siblings — silence didn't always mean something was wrong. Sometimes it just meant you were together.
+
+Eventually, Avi told her what had happened. An argument with his roommate, a misunderstanding at work, a string of small things that had piled on top of each other until he couldn't be alone in his apartment anymore.
+
+Rachel listened without interrupting.
+
+"I'm not sure what to do," he said.
+
+"You don't have to figure it out tonight," she replied.
+
+He nodded slowly. She gave him the extra blanket from the wardrobe. It was the one they had both used as children, patterned with faded blue stars.
+
+He fell asleep on the sofa with the light still on.
+
+Rachel turned it off and went to bed.`
+  },
+  {
+    id: 6, level: 'b1', levelLabel: 'B2 – Intermediate',
+    title: 'Learning to Cook',
+    preview: 'For thirty-one years, Michael had never made anything more complicated than pasta...',
+    words: 280, mins: 3,
+    text: `For thirty-one years, Michael had never made anything more complicated than pasta from a box. Then his mother got sick, and suddenly someone had to feed the family.
+
+He started with the basics. He bought a cookbook with large photographs and clear instructions. He read recipes the way he used to read technical manuals at work — carefully, looking for the logic behind each step.
+
+The first attempt was chicken soup. He burned the onions, used too much salt, and somehow forgot to add the actual chicken until halfway through. The result was drinkable but barely.
+
+The second time was better. The third time, his sister said it tasted "almost like Mom's."
+
+He didn't tell her how many hours he had spent on the phone with their aunt in Haifa, asking about specific spices, the right proportion of celery, why you had to skim the foam.
+
+There was something unexpectedly meditative about cooking. When he was stirring a sauce or chopping vegetables, his mind went quiet. All the worrying about his mother, the hospital visits, the paperwork — it faded into the background.
+
+One evening, after dinner, his mother smiled at him from across the table.
+
+"You've been cooking every night," she said.
+
+"Someone has to," he answered.
+
+She reached over and patted his hand.
+
+He realized, sitting there, that food was never just food. It was showing up. It was the simplest way he knew to say: I'm here, I see you, you're not alone.
+
+He started writing down the recipes. Just in case.`
+  },
+  {
+    id: 7, level: 'b1', levelLabel: 'B2 – Intermediate',
+    title: 'The Long Flight',
+    preview: 'Gate 14B. Maya checked the departure board for the fourth time. Still delayed...',
+    words: 255, mins: 3,
+    text: `Gate 14B. Maya checked the departure board for the fourth time. Still delayed. Two hours had become three, and the announcement board now simply read: "Wait."
+
+She found a seat by the window and watched planes take off into the grey afternoon sky. Each one disappeared into the clouds, then was gone.
+
+The man sitting next to her was reading a paperback novel. Its cover was worn and the pages had turned yellow at the edges — the kind of book that had been read many times.
+
+"Good book?" Maya asked, mostly because she was bored.
+
+He looked up. He was older, perhaps sixty, with round glasses and an unhurried expression. "Very. Would you like it when I'm done? I finish it every time I fly to Amsterdam."
+
+"You've read it before?"
+
+"Seven times." He smiled slightly. "Each time, I notice something new."
+
+Maya found that strange and interesting in equal measure. She asked what the book was about. He told her — a love story set in post-war Vienna, full of letters and misunderstandings and a reunion that took forty years.
+
+By the time the flight was finally called, she had borrowed a pen from him, written down the title, and learned that he was a retired architect, that he had lived in four countries, and that he believed the best conversations always happened in airports.
+
+"Because," he said, collecting his things, "nobody is trying to be anywhere other than here."
+
+Maya thought about that all the way to her seat.`
+  },
+
+  // ── B1–B2 extra ────────────────────────────────────────────────────────
+  {
+    id: 38, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Wrong Train',
+    preview: 'Nina got on the train at 7:42. She opened her book, found her seat, and didn\'t look up...',
+    words: 260, mins: 3,
+    text: `Nina got on the train at 7:42. She opened her book, found her seat, and didn't look up for twenty minutes. When she did, the landscape outside the window was wrong. Too many fields. Not enough buildings.
+
+She looked at the screen above the door. This train was going to Hadera, not to Tel Aviv.
+
+Her stomach dropped. She had been so absorbed in her book that she had boarded the wrong platform.
+
+She got off at the next station — a small one she had never heard of — and stood on the platform trying to think clearly. The station had two benches, a vending machine, and a timetable that had not been updated since 2019.
+
+She called her boss. He was not pleased but managed to stay professional about it.
+
+The next train back would take forty minutes. Nina sat on one of the benches and looked at the surrounding fields. Crows were walking slowly through the rows of winter wheat.
+
+It was, she realized, very quiet. She lived in the city and had forgotten what actual quiet felt like.
+
+She didn't open her book. She just sat and watched the crows.
+
+When the train finally came, she got on carefully, double-checked the destination, and found a window seat.
+
+She didn't open the book on the way back either.
+
+The wrong train, it turned out, had taken her somewhere she didn't know she needed to go.`
+  },
+  {
+    id: 39, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'Night Shift',
+    preview: 'Most people never see the city at 3am. Daniel had seen it every night for two years...',
+    words: 255, mins: 3,
+    text: `Most people never see the city at 3am. Daniel had seen it every night for two years, ever since he started working the night shift at a convenience store on Dizengoff Street.
+
+At 3am, the city was a different place. The streets were quieter but not empty. Other night-shift workers walked home or waited for buses. Occasionally, a group of young people came in, loud and cheerful, buying snacks and energy drinks after a long night out.
+
+Daniel liked these hours. During the day, the store was always busy and people were always in a hurry. At night, customers had more time. Sometimes they talked.
+
+There was the nurse who stopped in every Tuesday night on her way home from the hospital. The taxi driver who came in for his fourth coffee of the night. The elderly man who couldn't sleep and sometimes just stood in the chip aisle for twenty minutes without buying anything.
+
+Daniel never rushed them out.
+
+One night, a teenage girl came in crying. She sat on the floor next to the refrigerators and Daniel didn't ask questions. He brought her a chocolate bar and left it next to her without a word.
+
+An hour later she stood up, put money on the counter, and said: "Thank you."
+
+He nodded.
+
+He didn't know her name. She didn't know his. But that was fine.
+
+Not everything needed a name.`
+  },
+  {
+    id: 40, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Renovation',
+    preview: 'They had been living in the apartment for six years before they decided to renovate...',
+    words: 265, mins: 3,
+    text: `They had been living in the apartment for six years before they decided to renovate. The walls were fine, the windows worked, but the kitchen had been designed in 1992 and looked like it.
+
+The contractor said three weeks. It took seven.
+
+During those seven weeks, Rami and Shiri cooked on a single electric burner in the hallway, ate most of their meals at the table in the living room, and developed a remarkable intimacy with their neighbours, who took turns inviting them for dinner.
+
+Arguments that had never surfaced before suddenly appeared. About money. About decision-making. About who had agreed to the expensive tiles and who had not.
+
+There was one particular Saturday when Shiri sat in the dust-covered living room and felt genuinely uncertain about all of it — the apartment, the renovation, and possibly more than that.
+
+Rami brought her tea, which was difficult to make on a single burner, and sat next to her.
+
+"Three more weeks," he said.
+
+"That's what he said four weeks ago."
+
+Rami thought about this. "Two more weeks."
+
+She looked at him. He was covered in plaster dust from trying to fix something the contractor had left. He looked terrible.
+
+She started laughing.
+
+He laughed too.
+
+When the kitchen was finally finished, they made a proper meal together for the first time in two months. Nothing special — pasta, salad, wine.
+
+It was the best meal they had eaten in years.`
+  },
+  {
+    id: 41, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Language Class',
+    preview: 'Oksana had been in the country for eight months when she finally signed up for the Hebrew class...',
+    words: 260, mins: 3,
+    text: `Oksana had been in the country for eight months when she finally signed up for the Hebrew class. She had been postponing it because she was afraid — not of learning, but of being seen struggling.
+
+The class met on Tuesday evenings in a community centre near the central bus station. There were fourteen students. From Russia, Ethiopia, France, the Philippines, Ukraine. All adults. All trying.
+
+The teacher was a young woman named Anat who spoke slowly and used her hands a lot.
+
+At first, Oksana understood almost nothing. She wrote everything down. At home she repeated the words while cooking, while washing dishes, while waiting for the bus.
+
+The other students helped her. A man named Berhane from Ethiopia always sat next to her and pointed to the right line in the book when she got lost. She helped a French woman named Claire with her pronunciation.
+
+Three months later, Oksana went to the pharmacy and managed the entire interaction in Hebrew. The pharmacist didn't switch to English once. Oksana walked outside and stood on the pavement for a moment.
+
+It was a small thing. Just a pharmacy. Just three sentences.
+
+But she had built those sentences herself, word by word, Tuesday by Tuesday.
+
+She took out her phone and called her mother in Kyiv.
+
+"I spoke Hebrew today," she said.
+
+"I know you would," said her mother. "I always knew."
+
+She stood there a moment longer before walking home.`
+  },
+  {
+    id: 42, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'The Road Trip',
+    preview: 'Four friends. One old car. Three days, no plan...',
+    words: 265, mins: 3,
+    text: `Four friends. One old car. Three days, no plan.
+
+That had been Tomer's pitch, and somehow all four of them had said yes, even Gil, who kept a colour-coded schedule in his phone and considered spontaneity a personality flaw.
+
+They drove south. The car had no air conditioning and the windows had to stay open, which meant conversations were occasionally lost to the wind, which turned out to be fine.
+
+On the first day they stopped at a roadside restaurant that had no menu — just whatever the family was cooking that day. They ate lamb stew and fresh bread and a salad that tasted like summer. Nobody knew what the spices were and nobody asked.
+
+On the second night, they slept under the stars because the guesthouse they'd found online had closed down and they were too tired to drive further. The ground was hard. Tomer got bitten by something. Gil complained for forty minutes and then fell asleep mid-sentence.
+
+On the third day, they found a beach that wasn't on any map — small, rocky, completely empty. They swam until their fingers went wrinkled.
+
+On the drive back, nobody talked much. Not because anything was wrong. Because they were tired in the good way, the way you only get tired when you've actually been somewhere.
+
+"Same time next year?" said Tomer.
+
+"No plan?" said Gil.
+
+"No plan."
+
+Gil looked out the window at the road disappearing behind them.
+
+"Okay," he said.`
+  },
+  {
+    id: 43, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'The Downstairs Neighbour',
+    preview: 'For the first year, they communicated only through notes...',
+    words: 258, mins: 3,
+    text: `For the first year, they communicated only through notes slipped under the door.
+
+The first note, from downstairs: "Hello. Could you please be quieter after 10pm? The ceiling shakes." Polite. Clipped. Signed only with the apartment number: 4B.
+
+The reply, from upstairs: "Sorry. We'll be careful." Also unsigned.
+
+Then another: "Your washing machine runs at midnight. Just so you know."
+
+And another: "The music on Sunday mornings — could it be lower?"
+
+The upstairs tenant — whose name was Yoni — began to think of 4B as a kind of stern, invisible roommate. He adjusted his habits without resentment. The notes were reasonable. He had been inconsiderate without realising it.
+
+Then one morning there was a different note. "I'm making too much soup. Do you want some?" The handwriting was the same. But the tone was entirely changed.
+
+Yoni stood at his door for a moment, not sure what to do with this.
+
+He knocked on 4B. An elderly woman opened the door. Small, white-haired, in a housecoat. She looked surprised to see a face attached to all that noise.
+
+"The soup offer," he said.
+
+She stepped back to let him in.
+
+They ate at her kitchen table. She told him she was a retired schoolteacher. He told her he worked in sound engineering, which explained, he said, his relationship with volume.
+
+She laughed at that. It was the first time he had heard her laugh.
+
+It would not be the last.`
+  },
+  {
+    id: 44, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'The Marathon',
+    preview: 'Michal had never run more than three kilometres in her life...',
+    words: 262, mins: 3,
+    text: `Michal had never run more than three kilometres in her life when she registered for the marathon. She had done it impulsively, at 11pm, after a glass of wine, inspired by a video of a woman crossing a finish line in tears.
+
+By morning she regretted it. But she had already told people.
+
+She began training in February. The first run was four kilometres and she stopped twice. Her knees hurt. Her lungs hurt. Everything hurt.
+
+She kept going. Not because she was enjoying it — she was not — but because the alternative was to explain to everyone why she had quit.
+
+Somewhere around the fourth month, something shifted. She stopped counting the kilometres while she ran. She started noticing things instead: the quality of light at 6am, the sounds of the city waking up, the particular feeling of her body doing something difficult and continuing anyway.
+
+She finished the marathon in four hours and forty-one minutes. Not fast. Not the back of the pack either.
+
+At kilometre thirty-five, she had wanted to stop more than she had wanted almost anything. She did not stop.
+
+At the finish line, someone put a foil blanket around her shoulders. Her legs were shaking.
+
+Her husband found her in the crowd and hugged her without saying anything.
+
+Later, someone asked if she would do it again.
+
+She said she didn't know. But she said it in a way that meant yes.`
+  },
+  {
+    id: 45, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'First Day at the New Job',
+    preview: 'She had been at the old company for eleven years. The new office felt like a foreign country...',
+    words: 260, mins: 3,
+    text: `She had been at the old company for eleven years. The new office felt like a foreign country where everyone spoke a language she almost understood.
+
+The coffee machine was different. The keyboard shortcuts were different. Even the way people said good morning in the corridor was subtly different.
+
+Her name was Ilana and she had left the old job deliberately — there were reasons, good reasons — but on the first morning she sat at her new desk and missed it all anyway. The familiar chaos of it. Her corner. The colleagues who knew how she took her coffee.
+
+Her new manager, a confident man in his thirties, gave her a tour and a laptop and a list of people to meet. "Don't worry," he said cheerfully. "It takes about three months to feel normal."
+
+Three months seemed very long.
+
+But she went to the first meeting. Then the second. She asked questions when she didn't understand and admitted when she was lost. This felt risky — she had been senior enough at the old company to never need to admit anything.
+
+A young woman in her team, Noa, stopped by her desk that afternoon. "The first week is the worst," she said. "Then it gets really good." She said it simply, like a fact.
+
+Ilana nodded.
+
+That evening she got home and told her husband: "I think I'll be okay."
+
+She wasn't sure yet. But it was the right thing to practise saying.`
+  },
+  {
+    id: 46, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Sunday Market',
+    preview: 'The market opened at seven. By eight it was already crowded...',
+    words: 255, mins: 3,
+    text: `The market opened at seven. By eight it was already crowded — not just with people buying things, but with people who had nowhere else to be and found this a perfectly good reason to be here.
+
+Ron came every Sunday. Not always to buy. Sometimes just to walk.
+
+He liked the mix of it. Vegetables next to vinyl records. A woman selling homemade jams next to a man selling second-hand tools. A table of old books where you could stand for an hour without anyone minding.
+
+He knew some of the vendors by name now. Amir, who sold olives and told you in great detail which one was from which village. The young woman who made earrings from sea glass and always had a dog under the table.
+
+This particular Sunday, he found a small oil painting at the book table. A beach scene. Nothing dramatic — sand, water, light. Unsigned, unframed. Fifty shekels.
+
+He stood with it for a while, holding it.
+
+He didn't particularly need it. His walls were already full. He had spent the last year trying to own fewer things, not more.
+
+He bought it anyway.
+
+Walking home, painting under his arm, he thought about why. He decided it was because the light in it looked exactly like a specific afternoon he remembered from childhood and couldn't quite describe in words.
+
+Some things earn their space.`
+  },
+  {
+    id: 47, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Phone Call',
+    preview: 'She almost didn\'t answer. The number was unfamiliar, and she was in the middle of something...',
+    words: 258, mins: 3,
+    text: `She almost didn't answer. The number was unfamiliar, and she was in the middle of something, and the safe default had become to let things go to voicemail.
+
+But she answered.
+
+"Is this Dina?"
+
+"Yes."
+
+"This is Avi. Avi Peretz. From school — Ironi Alef, 1998 to 2004."
+
+She sat down.
+
+Avi Peretz. She had not thought about him in years. They had been close in seventh and eighth grade, the kind of closeness that forms quickly at that age and then, just as quickly, disappears when circumstances change.
+
+"I got your number from Sigal," he said. "I hope that's okay."
+
+"It's okay."
+
+A pause. "I'm calling because — I don't know if you remember this — but in ninth grade, when things were hard for me, you were kind to me. I've been thinking about that lately and I wanted to say thank you."
+
+Dina was quiet for a moment. She did remember. Vaguely. He had been going through something and she had sat with him at lunch for a few weeks.
+
+She hadn't thought of it as anything in particular. Just what you do.
+
+"I remember," she said.
+
+"I just wanted you to know," he said, "that it mattered."
+
+They talked for another twenty minutes, catching up lightly. When she hung up, she sat with the phone in her hand for a while.
+
+You never know which things stay with someone. You never know.`
+  },
+  {
+    id: 48, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'Moving Out',
+    preview: 'The boxes had been packed for three days. Every morning she woke up, looked at them...',
+    words: 262, mins: 3,
+    text: `The boxes had been packed for three days. Every morning she woke up, looked at them stacked against the wall, and thought: today I'll call the moving company. Every evening she made dinner and didn't call.
+
+Her name was Tamara and she was twenty-eight years old and she had been living in this apartment for four years — her first apartment, the one she'd moved into straight after university. The radiator was broken and the bathroom tiles were ugly and the downstairs neighbours played music she hated.
+
+And yet.
+
+The neighbourhood knew her face. The bakery on the corner put aside the last poppy seed roll for her on Sunday mornings. She could walk to the park at night without thinking about it.
+
+Her friend said: "You're not attached to the apartment. You're attached to the person you became there."
+
+Tamara thought about this for a long time.
+
+She was moving because of a job — a real opportunity, across the city, worth taking. This was not a question. But knowing something is the right decision doesn't mean leaving is easy.
+
+On the last night, she sat on the floor of the empty living room with a cup of tea. The room looked different without her things in it. Larger. Indifferent.
+
+She thanked it, silently, for what it had held.
+
+Then she turned off the light and closed the door.
+
+The next apartment was waiting. So was the next version of herself.`
+  },
+  {
+    id: 49, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Lunch Break',
+    preview: 'Every day at one o\'clock, Roni left the office and walked...',
+    words: 252, mins: 3,
+    text: `Every day at one o'clock, Roni left the office and walked. Not to eat, not to run an errand. Just to walk.
+
+His colleagues ate at their desks or at the long table in the break room, scrolling their phones. He had done that too, for the first two years. Then one afternoon he had gone outside just to get some air and walked for thirty minutes without meaning to.
+
+He had arrived back at the office feeling, oddly, like himself.
+
+He kept doing it. In winter he walked fast to stay warm. In summer he found the shadowed streets. He learned the neighbourhood block by block — the shortcut through the parking structure, the small square with the fig tree that nobody seemed to know about, the bakery that sold only one thing, very well.
+
+He didn't listen to anything. No podcast, no music. Just the walk.
+
+People at work found this slightly odd. "You just walk? And do nothing?" Yes. Exactly that.
+
+After a while, he noticed that his best thinking happened during these walks. Not because he was trying to think. But because he wasn't trying to do anything at all, and his mind, when left alone, sorted itself out.
+
+He solved more problems in thirty minutes of walking than in hours of staring at a screen.
+
+The screen didn't know that, of course.
+
+But Roni did.`
+  },
+  {
+    id: 50, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'The Recital',
+    preview: 'His daughter had been playing piano for three years. This was her first real recital...',
+    words: 260, mins: 3,
+    text: `His daughter had been playing piano for three years. This was her first real recital — a small hall, twelve students, forty parents who had taken the afternoon off work.
+
+Eitan sat in the third row. He had his phone on silent, which cost him something, because work was busy. He told himself this was fine. This was more important.
+
+His daughter was ninth to play. He watched the other children — some confident, some visibly terrified, one small boy who stopped mid-piece, looked at the ceiling as if searching for the notes there, and then found them and continued.
+
+When his daughter walked to the bench, Eitan's chest tightened in the particular way it did whenever she was about to do something that required courage.
+
+She played a piece by Schumann. Not perfectly — there was one hesitation in the middle that she recovered from quickly. But with something he hadn't expected: complete absorption. She was not performing. She was playing. There was a difference.
+
+Afterward, she found him in the crowd.
+
+"How was it?" she asked. She was already looking at him in the way children look at parents when they need the truth but also need it to be kind.
+
+"You were wonderful," he said. And he meant it, though not because she had played without mistakes.
+
+He meant it because of the look on her face at the piano.
+
+He hoped she had felt it herself.`
+  },
+  {
+    id: 51, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Bread',
+    preview: 'She learned to bake bread during a long and difficult winter...',
+    words: 255, mins: 3,
+    text: `She learned to bake bread during a long and difficult winter. Not for any philosophical reason — the bakery near her apartment had closed and she didn't want to walk further.
+
+The first loaf was flat and dense, more like a mistake than food. She threw it away and tried again.
+
+The second was better. The third was edible. By the sixth she understood, dimly, what she was doing. The dough had to rest. You couldn't hurry it. It would tell you when it was ready.
+
+She found this both frustrating and calming — frustrating because she was generally someone who sped things up, calming for the same reason.
+
+Her sister came for lunch one day and tasted the bread. She said nothing for a moment. Then: "When did you learn to do this?"
+
+"I didn't really learn," she said. "I just kept trying."
+
+Her sister took another piece.
+
+There was something, she had discovered, about bread specifically — unlike most things she made or built or fixed — that did not respond to effort or will. It responded to time and temperature and the particular quality of attention you gave it. Too much interference and it fought you. The right amount of leaving-alone and it became what it was supposed to be.
+
+She had started thinking that this was probably true of more things than bread.
+
+She hadn't said this to anyone. It sounded too much like a lesson.
+
+But she thought it every time she put a loaf in the oven.`
+  },
+  {
+    id: 52, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'The Argument',
+    preview: 'They had been arguing, on and off, for three days. Not about the big thing...',
+    words: 256, mins: 3,
+    text: `They had been arguing, on and off, for three days. Not about the big thing — the big thing was sitting quietly under everything, not yet ready to be named — but about smaller things. The dishes. The plans for the weekend. The tone of a message she had sent that he had misread, or possibly read correctly.
+
+On the third evening, Nir came home late. Hila was already in bed with a book but not reading.
+
+He sat on his side of the bed. She didn't look up.
+
+"I don't want to fight anymore," he said.
+
+"Neither do I."
+
+A pause.
+
+"But we haven't actually talked about it," she said.
+
+"I know."
+
+He turned to look at her. She lowered the book.
+
+What followed was a conversation that was not easy and not short. There were moments when one of them said something that landed wrong and had to be said again differently. There were moments of silence that were uncomfortable but not hostile.
+
+At some point, around midnight, they had arrived somewhere. Not a resolution exactly. But an understanding of the actual shape of the problem, which is different from knowing how to fix it but felt, still, like progress.
+
+"I think I was scared," he said at one point.
+
+"Of what?"
+
+He thought. "That it was going to keep going this way."
+
+"It doesn't have to," she said.
+
+They turned off the light.
+
+They were not fixed. But they were honest. That was a start.`
+  },
+  {
+    id: 53, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Hobby',
+    preview: 'For his fortieth birthday, Gad decided to try something completely new...',
+    words: 258, mins: 3,
+    text: `For his fortieth birthday, Gad decided to try something completely new. Not a big trip or an expensive watch — those felt like the wrong kind of celebration. Something he had always been curious about but never done.
+
+He signed up for a pottery class.
+
+The first session, he sat at a spinning wheel with four other beginners and understood immediately that he was bad at this. The clay collapsed. It wobbled and tipped and refused to do anything he wanted. His hands were covered in grey.
+
+The teacher, a calm woman of about sixty, came around and without saying much repositioned his hands, adjusted his pressure. The clay stopped collapsing.
+
+"It's not about force," she said. "It's about where your hands are."
+
+He came back the following week. And the week after.
+
+By the sixth week, he could make a bowl. Uneven, slightly asymmetrical, clearly the work of someone learning. But a bowl.
+
+He put it on the kitchen windowsill at home. His wife picked it up and looked at it.
+
+"You made this?"
+
+"Yes."
+
+She turned it over in her hands. It was, objectively, a little lopsided. She put it back in the window.
+
+"I like it," she said.
+
+He did too. Not because it was good. Because it was the first thing he had made with his hands since he was a child.
+
+There was something in that. He hadn't known he was missing it.`
+  },
+  {
+    id: 54, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'Waiting for the Results',
+    preview: 'The doctor had said three days. It had been four...',
+    words: 256, mins: 3,
+    text: `The doctor had said three days. It had been four.
+
+Maya checked her phone every twenty minutes. Not the whole time — she was at work, she had meetings, she was functional — but in the background, always, was the awareness that the call hadn't come.
+
+Probably nothing, the doctor had said. He had said it in the practiced way that doctors say things when they want to reassure without actually making a promise.
+
+She hadn't told many people. Her husband knew. Her closest friend knew. Beyond that, she had kept it quiet because saying it out loud made it more real, and she needed it to stay at the level of probably nothing for a little longer.
+
+The fourth night she couldn't sleep. She lay in the dark and thought about the word probably. How much space it left. How different it was from almost certainly or nearly definitely.
+
+Her husband, who was also awake, reached over and held her hand without saying anything.
+
+She appreciated that. There was nothing to say.
+
+On the morning of the fifth day, the call came. The results were clear. No action needed. Come back in a year for the routine check.
+
+Maya sat in the car park where she had answered the phone and felt the tension leave her body all at once.
+
+She called her husband.
+
+"Good news," she said.
+
+She heard him exhale.
+
+Probably nothing had turned into nothing, which was the whole point of hope.`
+  },
+  {
+    id: 55, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Old Neighbourhood',
+    preview: 'He drove through his old neighbourhood for the first time in fifteen years...',
+    words: 258, mins: 3,
+    text: `He drove through his old neighbourhood for the first time in fifteen years. Not on purpose — he had taken a wrong turn trying to find a hardware store — and by the time he realised where he was, he was already on the street where he had grown up.
+
+He slowed down.
+
+The buildings were the same but different. Repainted. New signs on the shops. The video rental place was now a coffee shop. The grocery where his mother had sent him for bread every Friday afternoon was a pharmacy.
+
+He parked without really deciding to and walked.
+
+The school was still there. Smaller than he remembered. Schools are always smaller than you remember. The fence had been replaced with a newer one. The blue gate was the same.
+
+He stood outside it for a while.
+
+He had been, what — seven? Eight? Walking through that gate every morning with a bag that was too heavy. Knowing the names of every person in every class. Having a favourite corner of the yard.
+
+The yard was empty now. It was two in the afternoon and school was not in session.
+
+He wondered if the kids who came here now had a favourite corner too.
+
+He got back in his car and found the hardware store.
+
+On the way home, he thought about how you can live inside a time so completely and then one day drive past it like a stranger.
+
+He found that sad and also okay. Both things at once.`
+  },
+  {
+    id: 56, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'The Apology',
+    preview: 'She had been trying to write the apology for six weeks...',
+    words: 260, mins: 3,
+    text: `She had been trying to write the apology for six weeks. Not because she wasn't sure she owed one — she was sure, very sure — but because every version she wrote felt either too small or too dramatic, and neither felt honest.
+
+The thing she had done was not a large thing by most external standards. She had told a mutual friend something that had been told to her in confidence. The friend it had concerned had found out. There had been no dramatic confrontation — just a quiet withdrawal, an increasing distance, texts that took longer and longer to be answered.
+
+She had lost the friendship so gradually that she hadn't noticed it going until it was already gone.
+
+She tried email first. Too formal. It felt like a legal document. She tried a voice message. She recorded it twelve times. Each version sounded either defensive or theatrical.
+
+In the end she wrote a letter by hand, on actual paper. Three sentences. She had been wrong. She had broken trust. She was sorry, not in the hope of repairing anything but because saying it directly — once, clearly — was what she owed.
+
+She posted it without expecting a reply.
+
+Two weeks later, a short message arrived. "Thank you for writing. I needed to hear that."
+
+That was all. The friendship didn't restore itself — that wasn't possible and she hadn't asked for it to be.
+
+But something closed.
+
+It turned out the apology had been for both of them.`
+  },
+  {
+    id: 57, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Dog Walker',
+    preview: 'She started walking other people\'s dogs to earn some extra money while she was between jobs...',
+    words: 254, mins: 3,
+    text: `She started walking other people's dogs to earn some extra money while she was between jobs. She had never had a dog herself. She had been a cat person, or she told herself she was.
+
+The first dog she walked was a large golden retriever named Mango. He was enthusiastic in a way that was almost inconvenient — pulling constantly, wanting to sniff every single lamp post as if each one held the secrets of the universe.
+
+By the end of the first walk, her arm ached and her shoes had mud on them.
+
+She came back the next day.
+
+After a week, she had six dogs and a different understanding of morning. Before six in the morning, the city had a different quality — quieter, more honest. The dogs responded to the world directly, without overthinking. Something smelled interesting; they went toward it. Something was scary; they backed away or barked.
+
+She found this, unexpectedly, instructive.
+
+The between-jobs period stretched from two weeks to two months to four. She didn't stop walking dogs when she found a new job. She kept two — Mango and a small anxious terrier named Beans who had started waiting at the window for her.
+
+"You became a dog person," her friend observed.
+
+She thought about it.
+
+"I became a morning person," she said. "The dogs are why."
+
+Though she suspected the distinction wasn't that important.`
+  },
+  {
+    id: 58, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'Second Chances',
+    preview: 'The restaurant had been closed for a year. The night it reopened...',
+    words: 256, mins: 3,
+    text: `The restaurant had been closed for a year. When it reopened under new management, the sign was different — cleaner, more modern — but the menu still had the lamb dish that had made it famous before things went wrong.
+
+Shai and his father came on the second night it was open. It had been Shai's suggestion. His father had raised an eyebrow but agreed.
+
+They had eaten here once before, years ago, on a birthday. It had been a good night. One of the easy evenings that Shai could count on one hand from that period.
+
+Things between them were complicated in the way father-son things get complicated — accumulated misunderstandings, words said wrong, expectations on both sides that had never been clearly named.
+
+They sat at a window table. They ordered the lamb. They talked about ordinary things first: work, his father's garden, the news.
+
+Halfway through the meal, his father said: "I should have come to that thing in April. The presentation."
+
+Shai looked up.
+
+"I had a reason. It wasn't a good enough reason."
+
+A pause.
+
+"It was a good presentation," Shai said. "People said good things."
+
+"I'm sure they did."
+
+That was all. No long speech, no excavation of old arguments. Just a small, specific acknowledgement of a specific thing.
+
+Shai ordered dessert. His father had coffee.
+
+The food was as good as he remembered.
+
+Not everything about a place needed to change for it to become something new.`
+  },
+  {
+    id: 59, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Podcast',
+    preview: 'She started a podcast because her therapist suggested she find a creative outlet...',
+    words: 255, mins: 3,
+    text: `She started a podcast because her therapist suggested she find a creative outlet and she had already tried painting, running, and journalling, none of which stuck.
+
+She called it nothing special — just her name and the word "talks." She bought a cheap microphone and talked into it for twenty minutes about a book she had read.
+
+She uploaded it without much expectation. Eleven people listened. One of them left a comment: "This was exactly what I needed today."
+
+She made another episode.
+
+Two months in, she had forty listeners. Not a lot. But they were consistent — the same names kept appearing in the comments, asking questions, responding to each other.
+
+A community, of a very small kind.
+
+She found she prepared more carefully than she expected to. Not for the listeners, exactly — though she wanted to be good for them — but because the discipline of explaining something clearly to an imagined audience forced her to understand it better herself.
+
+She started reading more. Thinking more carefully. Making notes in the margins of books.
+
+"You seem different," said a colleague one day. "More focused."
+
+She thought about how to explain. "I have a project," she said.
+
+"What kind of project?"
+
+"I talk about things I'm thinking about."
+
+The colleague nodded slowly, not quite understanding, but accepting.
+
+The podcast eventually reached three hundred listeners.
+
+She would have kept going with eleven.`
+  },
+  {
+    id: 60, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'The Garden in Winter',
+    preview: 'After her husband died, she stopped going into the garden...',
+    words: 258, mins: 3,
+    text: `After her husband died, she stopped going into the garden. It had been his project — the raised beds he had built, the fruit trees he had planted when they moved in thirty years ago.
+
+The garden was fine without attention for one season. By the second winter, things had started to go wrong. The beds had weeds. The fig tree needed pruning.
+
+Her daughter came on a Sunday and said nothing about the garden, which was the right thing to do.
+
+In January, for reasons she couldn't quite name, Miriam put on her boots and went outside.
+
+She stood in the middle of the garden. It was cold. The apple tree was bare. The raised beds were brown and overgrown.
+
+She pulled one weed. Then another.
+
+She went inside after twenty minutes because her back hurt.
+
+She came back the next day. And the next.
+
+By March, the beds were cleared. She had bought seeds — the same kinds he used to grow, because she knew those and didn't want to learn everything from the beginning.
+
+Her neighbour saw her planting one afternoon and came over.
+
+"I didn't know you gardened," he said.
+
+"I'm learning," she said.
+
+She was sixty-seven years old and she was learning to garden.
+
+In April, the first seedlings came through. She stood at the kitchen window with her coffee and looked at them.
+
+It was not the same. It was not supposed to be.
+
+But it was hers now.`
+  },
+  {
+    id: 61, level: 'b1', levelLabel: 'B1 – בינוני',
+    title: 'The Bus Ride Home',
+    preview: 'She missed the last direct bus and had to take the slow route...',
+    words: 254, mins: 3,
+    text: `She missed the last direct bus and had to take the slow route — two changes, forty extra minutes, bus lines she never normally used.
+
+The first bus was almost empty. An old man slept near the back. A teenage girl was on her phone, video-calling someone and laughing quietly.
+
+At the second stop, a young mother got on with two small children and a stroller that she couldn't collapse. The driver waited patiently while she struggled with it. A man near the front stood up and helped without being asked.
+
+The city at this hour — almost midnight — looked different than it did from a car or a taxi. Slower. More human-scaled. She saw a bakery with its lights on, workers inside pulling trays from ovens. A man walking a very small dog with great seriousness. A lit-up laundromat with one person inside, watching the machine spin.
+
+All these lives, running parallel.
+
+She had lived in this city for twelve years and taken the direct bus every time.
+
+At the final stop, she walked the four minutes home. The air was cool. She wasn't in a hurry, which was unusual.
+
+The missed bus had added forty minutes to her journey.
+
+She thought, stepping through her door, that they had been forty good minutes. Unhurried. Unscheduled. The city seen from the side.
+
+She looked up the route on her phone.
+
+Next time, she thought, she might take it on purpose.`
+  },
+  {
+    id: 62, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'Teaching Dad',
+    preview: 'Every Sunday evening, she sat with her father at the kitchen table and taught him how to use his smartphone...',
+    words: 257, mins: 3,
+    text: `Every Sunday evening, she sat with her father at the kitchen table and taught him how to use his smartphone. He had got the phone six months ago, after her mother passed, because they all agreed it was better for him to be reachable.
+
+He was seventy-one and patient and absolutely baffled by almost everything except the call function, which he had mastered immediately.
+
+The other things took time.
+
+She taught him how to send a voice message, because typing was hard on his large fingers. She showed him how to look up a recipe, how to check the weather, how to find a video. Once, triumphantly, he sent her a photograph he had taken of his own garden, perfectly framed, in good light.
+
+"How did you know to take it like that?" she asked.
+
+"Your mother taught me," he said. "She always said find the light."
+
+She didn't respond for a moment.
+
+He kept learning. By spring, he was sending her pictures every few days — the lemon tree, the cat from next door that had started sleeping on his porch, a sunset over the roof.
+
+She saved each one.
+
+He still called her when he was confused, which was often. She always answered.
+
+One evening he said: "I think I understand why young people like this so much."
+
+"Why?"
+
+He thought for a moment. "Because it keeps you close to people."
+
+She looked at his photograph on her screen — the lemon tree, in perfect light.
+
+"Yes," she said. "That's it exactly."`
+  },
+  {
+    id: 63, level: 'b1', levelLabel: 'B2 – בינוני',
+    title: 'The Note in the Book',
+    preview: 'She found it on page 144 of a secondhand novel — a small piece of paper, folded twice...',
+    words: 255, mins: 3,
+    text: `She found it on page 144 of a secondhand novel — a small piece of paper, folded twice. She almost didn't open it.
+
+Inside, in small neat handwriting: "If you're reading this, I hope the book was worth it. I loved it. The ending surprised me completely. Don't read the last page early — resist. — L."
+
+She sat with it for a while.
+
+She had bought the book at random from a market stall, because the cover was interesting and it was only ten shekels. She didn't know who L. was. She would never know.
+
+But L. had loved this book. Had thought to leave a note. Had trusted a stranger not yet born into the pages.
+
+She read the book carefully. It took her four evenings.
+
+On the fourth evening, she held the last page for a while before turning it. She thought about L. — probably a woman, she had decided, though she didn't know why. Probably someone who had sat in a similar chair, in different weather, in a different year.
+
+She turned the page.
+
+The ending surprised her completely.
+
+When she finished, she took out a small piece of paper and wrote: "I kept your secret. You were right — don't read the last page early. The whole book earns it. — T."
+
+She put it back on page 144.
+
+Then she took the book back to the market and placed it, spine-out, on the shelf where she had found it.
+
+Someone else would find it. Eventually.`
+  },
+
+  // ── C1 ──────────────────────────────────────────────────────────────────
+  {
+    id: 8, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Last Letter',
+    preview: 'The letter arrived six weeks after his grandfather died, forwarded three times...',
+    words: 290, mins: 4,
+    text: `The letter arrived six weeks after his grandfather died, forwarded three times from an address that no longer existed. It had been written on hotel stationery — the thin kind with a crest embossed at the top — and the handwriting was cramped and precise in the way that belonged to another era.
+
+Ben sat with it for a long time before opening it.
+
+Inside, his grandfather described a city he had visited in 1962 as a young engineer on his first professional assignment abroad. He wrote about the architecture with a reverence Ben had never heard from him in person, the way certain buildings "carried their history on the outside, unashamed." He described a woman he had met at a conference — her name was Miriam, she was Czech, she spoke four languages and argued brilliantly about city planning — and how they had walked along the river for two hours before he remembered he had a dinner reservation.
+
+He never saw her again. He did not explain why.
+
+The letter ended: "I don't know why I'm telling you this. Perhaps because you're the only one who might understand that some things don't need to conclude to have mattered. The afternoon I spent with Miriam by the river was complete in itself. I carried it quietly for sixty years and I find I am not sorry — only grateful."
+
+Ben read it twice, then set it on his desk next to a photograph of his grandfather as a young man.
+
+The photograph showed someone he had never quite known.
+
+He found himself wondering how many people we think we know, and how many remain — permanently, tenderly — out of reach.`
+  },
+  {
+    id: 9, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Cartographer',
+    preview: 'She made maps of places that didn\'t exist. Her studio was full of them...',
+    words: 285, mins: 4,
+    text: `She made maps of places that didn't exist. Her studio was full of them — rolled and stacked against every wall, pinned above the drafting table, layered in shallow drawers like geological sediment. Continents with no corresponding landmass. Rivers with elaborately named tributaries that drained into inland seas. Coastlines shaped by a logic that was purely aesthetic.
+
+People found this eccentric. Her sister, who was a structural engineer, found it baffling in a specific and recurring way that expressed itself as concern.
+
+"But what are they for?" her sister would ask.
+
+"Navigation," she would say, which wasn't entirely a joke.
+
+She had started making imaginary maps during a period of grief — after her father's illness, during the long months of waiting that had no shape to them, no landmarks she could orient herself by. Drawing gave the formless a form. It was cartography as coping, though she would never have used those words.
+
+What surprised her was that people wanted to buy them. Not as novelties or curiosities, but as objects to live with. A gallery in Berlin had shown twenty of them the previous spring. She had received letters — actual paper letters — from people describing the countries they saw in her work, each person finding something different, something personal.
+
+One man from Lisbon wrote that a particular map reminded him of his childhood neighborhood, which had been demolished in the 1980s and existed now only in the memories of people who were getting old. He had hung the map in his dining room, he said. "Now I can show my grandchildren where I grew up."
+
+She thought about that letter often. The idea that an invented place could become a container for a real one.
+
+That seemed to her like a reasonable definition of what any artist was actually doing.`
+  },
+  {
+    id: 10, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'Thirty-Two Seconds',
+    preview: 'The train had been stuck in the tunnel for eleven minutes. Nobody said anything...',
+    words: 275, mins: 4,
+    text: `The train had been stuck in the tunnel for eleven minutes. Nobody said anything. That was the social contract of the underground — you absorbed the inconvenience privately, you did not inflict it on strangers by giving voice to it.
+
+A man across from Lena was listening to something on his earphones, eyes closed. The woman beside her was reading a glossy magazine with the deliberate concentration of someone who had decided to be elsewhere. A teenager stood by the door, phone held at the angle that meant he was watching something, not reading.
+
+Lena had nothing to look at except the black square of the window opposite, which returned a dim, imprecise version of her own face.
+
+She thought about an argument she'd had that morning — not a dramatic one, but the slow, grinding kind, conducted largely through tone of voice. She had left the apartment without resolving it, which meant it had traveled with her all day, taking up space.
+
+At some point in the last decade, she had stopped being good at the direct conversation. It had happened gradually, then all at once, the way most things do. She now communicated displeasure through careful withdrawal, through a particular way of being quiet, through making herself unavailable in rooms she was physically present in.
+
+She recognized this as a failure of some kind. She wasn't sure whether the failure was hers alone.
+
+The train lurched forward. A collective, unconscious exhale moved through the carriage.
+
+The man across from her opened his eyes. For a brief moment, they looked at each other with the mild solidarity of people who had waited through the same thing.
+
+Then the station arrived, and they separated into the crowd without a word.`
+  },
+  {
+    id: 11, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'What Remains',
+    preview: 'After the funeral, people came to the house and ate food they had not prepared...',
+    words: 265, mins: 4,
+    text: `After the funeral, people came to the house and ate food they had not prepared, from dishes that did not belong to them. This was the custom and it served a function that Elana could only appreciate in retrospect: it meant you were never fully alone with what had just happened.
+
+Her mother had been organized in the particular way that thorough people become when they know time is limited. The paperwork was in order. The instructions were in a folder labeled, with characteristic understatement, "Practicalities." The wishes for the funeral were specific and had been honored exactly.
+
+What her mother had not organized, could not have organized, was the quality of the silence afterward.
+
+It was not an empty silence. It was overfull — dense with the accumulated weight of a life Elana had known only partially, only from one angle, the way you know any person who raised you. There were photographs she had never seen. Friends who arrived and turned out to have been part of a life that predated Elana by decades. A woman who had been her mother's roommate at university cried in the kitchen and said: "She was the funniest person I ever knew," which startled Elana, because funny was not a word she would have instinctively chosen.
+
+What you think you know about someone is always a portrait painted from a single direction.
+
+Later, after everyone had left, Elana sat in her mother's armchair — the reading one, by the lamp, with the worn patch on the armrest — and tried to feel the shape of what was missing.
+
+She found she couldn't, yet. It was too large to see from the inside.`
+  },
+
+  // ── ממש קל ─────────────────────────────────────────────────────────────
+  {
+    id: 101, level: 'a0', levelLabel: 'ממש קל',
+    title: 'My Dog',
+    preview: 'I have a dog. His name is Max. He is big and brown...',
+    words: 90, mins: 1,
+    text: `I have a dog. His name is Max. He is big and brown.
+
+Max likes to run. He runs in the park every day. I run with him.
+
+Max is hungry in the morning. I give him food. He eats fast.
+
+At night, Max sleeps on the floor. He sleeps next to my bed.
+
+I love Max. Max loves me too.`
+  },
+  {
+    id: 102, level: 'a0', levelLabel: 'ממש קל',
+    title: 'My Family',
+    preview: 'I have a family. My mom, my dad, and my sister...',
+    words: 95, mins: 1,
+    text: `I have a family. My mom, my dad, and my sister.
+
+My mom is kind. She makes good food.
+
+My dad is tall. He works every day.
+
+My sister is small. She is five years old. She likes to draw.
+
+We eat dinner together. We talk and laugh.
+
+At night, mom says: "Good night."
+Dad says: "Sleep well."
+My sister gives me a hug.
+
+I like my family.`
+  },
+  {
+    id: 103, level: 'a0', levelLabel: 'ממש קל',
+    title: 'At the Park',
+    preview: 'Today I go to the park. The park is near my house...',
+    words: 88, mins: 1,
+    text: `Today I go to the park. The park is near my house.
+
+There are trees. There are flowers. The flowers are yellow and red.
+
+I see a dog. The dog is small. It runs after a ball.
+
+I see two boys. They play football. They run fast.
+
+I sit on a bench. The sun is warm. The sky is blue.
+
+I am happy at the park.`
+  },
+  {
+    id: 104, level: 'a0', levelLabel: 'ממש קל',
+    title: 'Breakfast',
+    preview: 'In the morning, I eat breakfast. I like eggs and toast...',
+    words: 86, mins: 1,
+    text: `In the morning, I eat breakfast.
+
+I like eggs. I like toast. I like orange juice.
+
+Mom makes the eggs. They are hot. They smell good.
+
+I eat slowly. The toast is crunchy. The juice is cold.
+
+After breakfast, I feel good. I am ready for school.
+
+"Have a good day," says mom.
+
+"Thank you," I say. "You too."`
+  },
+  {
+    id: 105, level: 'a0', levelLabel: 'ממש קל',
+    title: 'The Weather',
+    preview: 'Today it is sunny. The sky is blue and bright...',
+    words: 88, mins: 1,
+    text: `Today it is sunny. The sky is blue and bright.
+
+Yesterday it was cold. I wore a coat and a hat.
+
+Tomorrow it will rain. I will take my umbrella.
+
+I like sunny days. I can play outside. I can ride my bike.
+
+On rainy days, I stay inside. I read books. I watch TV.
+
+Every day is different. I like that.`
+  },
+  {
+    id: 106, level: 'a0', levelLabel: 'ממש קל',
+    title: 'My Room',
+    preview: 'My room is small. It has a bed, a desk, and a window...',
+    words: 90, mins: 1,
+    text: `My room is small. It has a bed, a desk, and a window.
+
+My bed is blue. It is soft and warm. I sleep well in my bed.
+
+My desk is next to the window. I do my homework there.
+
+On the wall I have pictures. One picture is of my dog. One picture is of the sea.
+
+I like my room. It is my place.
+
+At night I close the door. It is quiet. I sleep.`
+  },
+  {
+    id: 107, level: 'a0', levelLabel: 'ממש קל',
+    title: 'The Cat',
+    preview: 'There is a cat near my house. She is white and small...',
+    words: 88, mins: 1,
+    text: `There is a cat near my house. She is white and small.
+
+I don't know her name. I call her Snow.
+
+Every day, Snow sits by the door. She looks at me. I give her milk. She drinks it fast.
+
+Snow does not like loud sounds. She runs away when a car comes.
+
+But she comes back. She always comes back.
+
+I think Snow is my cat now. I don't think she minds.`
+  },
+  {
+    id: 108, level: 'a0', levelLabel: 'ממש קל',
+    title: 'Going to School',
+    preview: 'Every morning I go to school. I wake up at seven...',
+    words: 92, mins: 1,
+    text: `Every morning I go to school. I wake up at seven.
+
+I wash my face. I brush my teeth. I eat breakfast.
+
+I put on my bag. It is heavy. I have books and a water bottle.
+
+I walk to school. It is ten minutes. I walk with my friend Dan.
+
+We talk on the way. We laugh. Sometimes we run.
+
+At school, I see my friends. I see my teacher.
+
+I like school. I like learning new things.`
+  },
+  {
+    id: 109, level: 'a0', levelLabel: 'ממש קל',
+    title: 'My Favourite Food',
+    preview: 'My favourite food is pizza. I love pizza very much...',
+    words: 87, mins: 1,
+    text: `My favourite food is pizza. I love pizza very much.
+
+Pizza has cheese. It has tomato. It can have vegetables or meat.
+
+I like cheese pizza the best. It is warm and soft.
+
+On Friday, my family orders pizza. We eat together. We watch a film.
+
+I eat two pieces. Sometimes three.
+
+"Too much!" says mom.
+
+"No," I say. "Just right."
+
+We all laugh.
+
+Pizza is the best food.`
+  },
+  {
+    id: 110, level: 'a0', levelLabel: 'ממש קל',
+    title: 'The Sea',
+    preview: 'I love the sea. The sea is big and blue...',
+    words: 89, mins: 1,
+    text: `I love the sea. The sea is big and blue.
+
+In summer, I go to the sea with my family. We swim. The water is cold at first. Then it feels good.
+
+I like to look for shells. Small shells, big shells, pink shells. I put them in my pocket.
+
+I eat ice cream on the beach. My favourite is chocolate.
+
+At the end of the day, I am tired and happy.
+
+The sea is my favourite place in summer.`
+  },
+  {
+    id: 111, level: 'a0', levelLabel: 'ממש קל',
+    title: 'Colours',
+    preview: 'I love colours. Red is the colour of apples...',
+    words: 88, mins: 1,
+    text: `I love colours.
+
+Red is the colour of apples. I like apples.
+Blue is the colour of the sky. I like the sky.
+Yellow is the colour of the sun. The sun is warm.
+Green is the colour of grass. I like to sit on the grass.
+White is the colour of snow. Snow is cold and pretty.
+
+My favourite colour is blue. My room is blue. My bag is blue.
+
+What is your favourite colour?`
+  },
+  {
+    id: 112, level: 'a0', levelLabel: 'ממש קל',
+    title: 'A New Friend',
+    preview: 'Today a new girl came to my class. Her name is Lena...',
+    words: 90, mins: 1,
+    text: `Today a new girl came to my class. Her name is Lena.
+
+Lena sat next to me. She was quiet. She looked a little scared.
+
+I said: "Hi. My name is Tali."
+
+She said: "Hi."
+
+At lunch I asked: "Do you want to sit with me?"
+
+She said: "Yes. Thank you."
+
+We ate together. I told her about our teacher. She told me about her old school.
+
+After lunch, she smiled at me.
+
+I think Lena and I will be good friends.`
+  },
+  {
+    id: 113, level: 'a0', levelLabel: 'ממש קל',
+    title: 'Bedtime',
+    preview: 'At nine o\'clock, it is bedtime. Mom comes to my room...',
+    words: 88, mins: 1,
+    text: `At nine o'clock, it is bedtime.
+
+Mom comes to my room. She turns off the big light. She turns on the small lamp.
+
+She sits on my bed. She reads me a story. Tonight the story is about a lion and a mouse.
+
+I like the story. The mouse helps the lion. The lion is surprised.
+
+"The end," says mom.
+
+She gives me a kiss. "Good night," she says. "I love you."
+
+"I love you too," I say.
+
+She goes out. I close my eyes. I think about the lion and the mouse.
+
+I sleep.`
+  },
+  {
+    id: 114, level: 'a0', levelLabel: 'ממש קל',
+    title: 'Numbers',
+    preview: 'I like numbers. One apple, two dogs, three cats...',
+    words: 86, mins: 1,
+    text: `I like numbers.
+
+One apple. It is red and round.
+Two dogs. They run and play.
+Three cats. They sleep all day.
+Four books. I read them all.
+Five friends. We play together.
+
+At school, I learn maths. I add numbers. I take them away.
+
+One plus one is two. Two plus two is four. Four plus four is eight.
+
+Numbers are everywhere. On buses. On doors. On clocks.
+
+I look at my clock. It is three o'clock.
+
+Time for a snack!`
+  },
+  {
+    id: 115, level: 'a0', levelLabel: 'ממש קל',
+    title: 'The Garden',
+    preview: 'We have a small garden. There are flowers and vegetables...',
+    words: 90, mins: 1,
+    text: `We have a small garden. There are flowers and vegetables.
+
+The flowers are red and yellow. They are pretty. Bees come to the flowers.
+
+We also grow tomatoes. Tomatoes are red. They are good to eat.
+
+Dad waters the garden every evening. He uses a big can.
+
+I help him. I water the small plants. I am careful.
+
+When the tomatoes are ready, we pick them. We eat them with salt.
+
+They taste very good. Better than the shop.
+
+I like our garden.`
+  },
+
+  // ── ילדים – extra ──────────────────────────────────────────────────────
+  {
+    id: 16, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Big Snowball',
+    preview: 'It was the first snow of the year. Sam ran outside in his boots...',
+    words: 160, mins: 2,
+    text: `It was the first snow of the year. Sam ran outside in his boots and his big red coat. The snow was white and soft.
+
+He made a small snowball. Then he made it bigger. And bigger. Soon it was very big — almost as tall as Sam!
+
+His little sister, Maya, came outside. "Wow!" she said. "That is the biggest snowball I ever saw!"
+
+They put a carrot on it for a nose. They used two buttons for eyes. They put an old hat on top.
+
+"It's a snowman!" said Sam.
+
+Mom came to the door. She had two cups of hot chocolate. "Come inside," she said. "Before you get cold."
+
+They looked at the snowman one more time. He looked happy.
+
+Sam waved at him. "See you tomorrow," he said.`
+  },
+  {
+    id: 17, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Turtle Who Was Slow',
+    preview: 'Tommy the turtle was very slow. All the other animals ran fast...',
+    words: 170, mins: 2,
+    text: `Tommy the turtle was very slow. All the other animals ran fast. The rabbit was fast. The dog was fast. Even the little mouse was fast.
+
+Tommy walked slowly. One step. Two steps. Three steps.
+
+"Come on, Tommy!" said the rabbit. "You are too slow!"
+
+Tommy did not say anything. He just kept walking.
+
+One day, there was a big hill. All the animals ran up the hill. They ran so fast that they fell down. The rabbit fell. The dog fell. The mouse fell too.
+
+Tommy walked slowly, one step at a time. He did not fall.
+
+When Tommy got to the top, all the other animals were at the bottom, trying again.
+
+Tommy sat at the top and looked at the view. It was beautiful.
+
+"Slow is okay," he said quietly. "I got here too."
+
+The rabbit looked up and saw Tommy at the top. "Good job, Tommy," he said. And he meant it.`
+  },
+  {
+    id: 18, level: 'a1', levelLabel: 'ילדים',
+    title: 'My Best Friend',
+    preview: 'My best friend is called Jake. We met in first grade...',
+    words: 165, mins: 2,
+    text: `My best friend is called Jake. We met in first grade. We sat next to each other and he gave me half of his sandwich. That was the day we became friends.
+
+Jake is funny. He makes me laugh every day. He does silly faces and funny voices. Once he made our teacher laugh so hard she had to sit down.
+
+We like the same things. We both love football. We both hate broccoli. We both think dogs are better than cats (but we don't say this near my cat, Kiwi).
+
+Sometimes Jake and I fight. Once we didn't talk for three days because of an argument about a video game. It was very hard.
+
+But then he called me and said sorry. And I said sorry too. And we were friends again.
+
+Mom says that's what real friends do — they come back.
+
+I think she's right.
+
+Jake is my best friend. I hope we are friends when we are old and have gray hair.`
+  },
+  {
+    id: 19, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Class Pet',
+    preview: 'Our class got a hamster. His name is Peanut...',
+    words: 158, mins: 2,
+    text: `Our class got a hamster. His name is Peanut. He is small and brown and very fast. He runs on his wheel all day long.
+
+Everyone loves Peanut. We take turns feeding him. On Mondays, it is my turn. I give him seeds and a small piece of carrot.
+
+Peanut is very curious. When you put your hand in his cage, he comes to smell it. His nose moves very fast. It is so cute.
+
+One day, Peanut escaped. We looked everywhere. Under the desks. Behind the bookshelf. Inside the supply cabinet.
+
+Our teacher, Mr. Levy, found him. Peanut was sitting inside Mr. Levy's shoe. He looked very comfortable.
+
+Everyone laughed.
+
+Mr. Levy did not look angry. He carefully put Peanut back in his cage and gave him an extra seed.
+
+"That's enough adventure for one day," he said.
+
+Peanut ran on his wheel.
+
+I think he was happy.`
+  },
+  {
+    id: 20, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Rainy Day',
+    preview: 'It was raining outside. Lily looked out the window and felt sad...',
+    words: 162, mins: 2,
+    text: `It was raining outside. Lily looked out the window and felt sad. She wanted to go to the park. But the sky was grey and the rain was falling fast.
+
+"What can I do?" she asked her dad.
+
+"Let's make something," he said.
+
+They got paper, scissors, and glue. Dad showed Lily how to fold the paper. They made boats. Little paper boats in all colors — red, blue, yellow, and green.
+
+Then they put the boats in the bathtub and made waves with their hands. The boats went up and down.
+
+"Mine is the captain!" said Lily, pointing to the red one.
+
+They played for a long time. Lily forgot about the park.
+
+After a while, she looked out the window again. The rain had stopped. The sun was coming out.
+
+But she didn't want to go to the park anymore.
+
+"Can we make more boats?" she asked.
+
+Dad smiled. "Of course," he said.`
+  },
+  {
+    id: 21, level: 'a1', levelLabel: 'ילדים',
+    title: 'A Letter to Grandpa',
+    preview: 'Dear Grandpa, I am writing this letter at the kitchen table...',
+    words: 168, mins: 2,
+    text: `Dear Grandpa,
+
+I am writing this letter at the kitchen table. Mom is cooking soup. It smells really good.
+
+I want to tell you about my week. On Monday we had a test at school. I studied a lot and I got a good grade. My teacher wrote "Well done!" at the top of the paper. I put it on my wall.
+
+On Wednesday, our dog Biscuit ran into a puddle and came home very muddy. We had to give him a bath. He hates baths. He shook the water all over me. I was more wet than him!
+
+On Friday it was my friend Tom's birthday. We ate pizza and played games. I won one game and lost three. But it was still fun.
+
+I miss you, Grandpa. Mom says we will visit you next month. I am counting the days.
+
+Please say hello to your cat, Whiskers, from me.
+
+Love,
+Ben`
+  },
+  {
+    id: 22, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Magic Library',
+    preview: 'There was a library at the end of our street. It was old and small...',
+    words: 172, mins: 2,
+    text: `There was a library at the end of our street. It was old and small. The walls were covered in books from floor to ceiling.
+
+The librarian was a tall woman named Mrs. Blue. She always wore blue dresses. She knew the name of every single book.
+
+"I want a book about dragons," I told her one day.
+
+She walked to a shelf and took out a book without even looking. "This one," she said. "You'll love it."
+
+She was right. I read it in two days.
+
+I kept coming back. Every week I brought back one book and got a new one. Mrs. Blue always chose perfectly. About robots. About the ocean. About a girl who talked to birds.
+
+"How do you always know the right book?" I asked her.
+
+She smiled. "I don't know the right book," she said. "I know you."
+
+I didn't understand at first. But later, walking home with my new book under my arm, I thought I did.
+
+Books know things about you that you don't know yet.`
+  },
+  {
+    id: 23, level: 'a1', levelLabel: 'ילדים',
+    title: 'Sports Day',
+    preview: 'Today was Sports Day at school. Everyone was excited...',
+    words: 160, mins: 2,
+    text: `Today was Sports Day at school. Everyone was excited. We wore our sport clothes and went outside.
+
+There were four teams: red, blue, yellow, and green. I was on the blue team.
+
+First we had a running race. I ran as fast as I could. My legs hurt. But I came in third place. My team cheered for me.
+
+Then we had a jumping competition. You had to jump over a rope. I jumped ten times without stopping. That was my best!
+
+After lunch, we had the relay race. Each person runs and then passes a stick to the next person. I was second in my team. I ran fast and gave the stick to my friend without dropping it.
+
+The blue team came in second place overall. The red team won. They got gold medals made of chocolate.
+
+We got silver ones. I ate mine on the way home.
+
+My legs were tired. My face was red. But I was happy.
+
+"Same time next year?" said my friend.
+
+"Yes," I said. "Definitely."`
+  },
+  {
+    id: 24, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Old Bicycle',
+    preview: 'In the garage there was an old bicycle. It belonged to my dad when he was young...',
+    words: 165, mins: 2,
+    text: `In the garage there was an old bicycle. It belonged to my dad when he was young. It was red, but the paint was coming off. The wheels were flat.
+
+"Can I fix it?" I asked.
+
+Dad looked at it for a long time. "Maybe," he said.
+
+We spent the whole Saturday working on it. Dad taught me how to put air in the tires. We cleaned the metal parts. We put oil on the chain.
+
+Mom found some red paint in the basement. I painted the frame carefully. My hand was not perfectly straight, but it looked good.
+
+When it was done, we both stood back and looked.
+
+"Not bad," said Dad quietly.
+
+I could see he was happy. His eyes looked soft.
+
+"Was this your favourite thing when you were my age?" I asked.
+
+"Yes," he said. "Every day after school."
+
+I got on the bicycle and rode down the street. The wind hit my face.
+
+I think I understood why he loved it.`
+  },
+  {
+    id: 25, level: 'a1', levelLabel: 'ילדים',
+    title: 'The New Kid',
+    preview: 'A new boy came to our class on a Tuesday. His name was Omar...',
+    words: 168, mins: 2,
+    text: `A new boy came to our class on a Tuesday. His name was Omar. He stood at the front of the class and looked at the floor. His face was red.
+
+I remembered how I felt when I was the new kid, two years ago. It was terrible.
+
+At lunch, Omar sat alone. He had a sandwich and an apple. He looked at his food and did not look up.
+
+I picked up my tray and walked over. "Can I sit here?" I asked.
+
+Omar looked up. He looked surprised. "Okay," he said.
+
+We didn't talk much at first. But then I saw he had a book about space on the table.
+
+"Do you like space?" I asked.
+
+His whole face changed. He started talking about planets and stars and black holes. He knew so much.
+
+I didn't understand everything. But I listened.
+
+By the end of lunch, we were both talking and laughing.
+
+The next day, Omar saved me a seat.
+
+That's how it starts, I think. One question. One lunch.`
+  },
+  {
+    id: 26, level: 'a1', levelLabel: 'ילדים',
+    title: 'Baking with Grandma',
+    preview: 'Every Sunday I go to Grandma\'s house. We always bake something together...',
+    words: 163, mins: 2,
+    text: `Every Sunday I go to Grandma's house. We always bake something together. Last week we made cookies.
+
+Grandma had everything ready on the table: flour, sugar, butter, and eggs. She put on her apron with the flowers on it.
+
+I put on my apron too. Mine has a dinosaur on it.
+
+"First we mix the butter and sugar," said Grandma.
+
+I mixed them in the big bowl. It was hard work. My arm got tired.
+
+Then we added the eggs and flour. The dough was soft and smelled nice. Grandma let me taste a little bit. It was sweet.
+
+We made small balls of dough and put them on the tray. Then the oven. Twenty minutes.
+
+The kitchen filled with the best smell in the world.
+
+When the cookies came out, they were golden and perfect. We waited for them to cool down. That was the hardest part.
+
+Finally, I took one. It was warm and soft and perfect.
+
+"These are the best cookies," I said.
+
+Grandma smiled. "Everything tastes better when you make it yourself."
+
+I think she's right.`
+  },
+  {
+    id: 27, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Sick Day',
+    preview: 'I woke up with a sore throat and could not go to school...',
+    words: 162, mins: 2,
+    text: `I woke up with a sore throat. My head hurt too. Mom put her hand on my forehead.
+
+"You have a temperature," she said. "No school today."
+
+Usually I love days off school. But a sick day is different. You feel bad and you have to stay in bed.
+
+Mom brought me soup. She put a cold cloth on my head. She sat next to me and read me a story, like when I was very little.
+
+I fell asleep. When I woke up, it was afternoon. Through my window I could see the sun.
+
+Dad came home from work early. He brought me a new comic book. He sat on the bed and we read it together, even though he can't do the voices as well as Mom.
+
+By evening I felt a little better. I ate some toast. I watched TV on the sofa under a blanket.
+
+"Back to school tomorrow?" asked Dad.
+
+"Maybe," I said. "I'm still a little sick."
+
+He laughed. He knew I was not really sick anymore.
+
+But he let me stay on the sofa anyway.`
+  },
+  {
+    id: 28, level: 'a1', levelLabel: 'ילדים',
+    title: 'Lost in the Supermarket',
+    preview: 'I was with Mom in the big supermarket. I was looking at the cereals...',
+    words: 165, mins: 2,
+    text: `I was with Mom in the big supermarket. I was looking at the cereals — there were so many kinds! — and when I looked up, Mom was gone.
+
+I walked to where she was standing. She was not there.
+
+I looked left. I looked right. Only strangers.
+
+My heart went fast. I tried not to cry.
+
+I remembered what Mom told me: "If you get lost, find a worker in the store and tell them your mom's name."
+
+I saw a woman with a store uniform. She had a name tag that said "Rosa."
+
+"Excuse me," I said. My voice was shaky. "I can't find my mom. Her name is Hila."
+
+Rosa smiled. She took me to the front of the store. She talked into a little radio.
+
+Two minutes later, Mom came running. Her face was white.
+
+She hugged me very tightly.
+
+"I turned around for one second," she said. Her voice was wobbly.
+
+"I'm okay," I said. "I remembered what you told me."
+
+She hugged me again.
+
+Rosa gave me a sticker. It had a star on it.
+
+I wore it all the way home.`
+  },
+  {
+    id: 29, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Camping Trip',
+    preview: 'Last summer, our family went camping for three days. It was my first time...',
+    words: 170, mins: 2,
+    text: `Last summer, our family went camping for three days. It was my first time sleeping in a tent.
+
+Dad put up the tent. It took a long time and there were many pieces. Mom and I collected wood for the fire.
+
+At night, Dad made a fire. We sat around it and ate hot dogs on sticks. They tasted amazing — better than any hot dog I had before.
+
+The sky was dark and full of stars. In the city you can't see the stars like that. There were thousands of them.
+
+"That's the Milky Way," said Dad, pointing.
+
+I looked for a long time.
+
+Inside the tent, it was dark and a little cold. I could hear the trees moving outside. I held my flashlight.
+
+"Scared?" asked my little brother.
+
+"No," I said. I was a little bit.
+
+But then I listened to the sounds — the wind, the fire, the frogs — and I felt okay. It was different. Not bad different. Good different.
+
+In the morning, Mom made eggs on a little stove. I ate three portions.
+
+I want to go camping again.`
+  },
+  {
+    id: 30, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Art Project',
+    preview: 'Our teacher gave us a project: make something about who you are...',
+    words: 164, mins: 2,
+    text: `Our teacher gave us a project: make something about who you are. It could be a drawing, a collage, or a model. We had two weeks.
+
+I did not know what to make at first. I sat at my desk and thought.
+
+I like football. I like my dog. I like cooking with Grandma. I like the color blue. I like space.
+
+I decided to make a collage. I cut pictures from old magazines. A football. A dog. A chef. Stars.
+
+I painted the background dark blue, like the night sky. Then I glued everything on.
+
+At the bottom I wrote my name in big silver letters.
+
+When I finished, I looked at it. It looked like me.
+
+On the day we showed our projects, the whole class walked around the room and looked at everyone's. It was like a little museum.
+
+My friend said mine was the best. Maybe he was just being nice. But it made me feel good.
+
+Teacher said: "Every project tells a story. And every story is important."
+
+I kept my collage. It's on my wall now, next to the window.`
+  },
+  {
+    id: 31, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Fish Who Could Fly',
+    preview: 'Once there was a fish named Blue who lived at the bottom of the sea...',
+    words: 172, mins: 2,
+    text: `Once there was a fish named Blue who lived at the bottom of the sea. Blue was a good swimmer. But every day, he looked up through the water at the light above and wondered what was up there.
+
+"What is outside the water?" he asked an old crab.
+
+"Nothing for fish," said the crab.
+
+But Blue was curious. One day, he swam faster and faster, up and up, until — splash! — he jumped out of the water.
+
+For one second, he was in the air. He could see the sky. It was the most beautiful thing he had ever seen. Blue and wide and full of light.
+
+Then he fell back into the water.
+
+He swam back down, breathing fast. The other fish looked at him strangely.
+
+"What was it like?" asked a little yellow fish.
+
+Blue thought for a moment. "Big," he said. "Very, very big."
+
+After that, Blue jumped every day. Just for that one second of sky.
+
+Some things are worth the jump, even if you always come back to where you started.`
+  },
+  {
+    id: 32, level: 'a1', levelLabel: 'ילדים',
+    title: 'Saturday Morning',
+    preview: 'Saturday morning is the best morning of the week. No school. No alarm...',
+    words: 160, mins: 2,
+    text: `Saturday morning is the best morning of the week. No school. No alarm.
+
+I wake up on my own. The house is quiet. Everyone is still sleeping.
+
+I go to the kitchen. I pour myself a bowl of cereal. I take it to the sofa and turn on cartoons. The volume is low so I don't wake anyone up.
+
+This is my time. Just me and the cartoons and the cereal.
+
+After a while, my little sister comes in. Her hair is messy and she has her blanket. She sits next to me without saying anything and watches too.
+
+Then Dad comes in. He makes coffee. The smell goes through the whole house.
+
+Then Mom. She sits in the big chair with her cup.
+
+And then we are all there. Not talking. Just together. Watching cartoons.
+
+Saturday morning is the best. Not because of the cartoons, exactly. Not because of the cereal.
+
+Because of this. All of us in our pajamas, with nowhere to go.
+
+That's the best part.`
+  },
+  {
+    id: 33, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Scared Puppy',
+    preview: 'We got a new puppy. He was eight weeks old and very small...',
+    words: 167, mins: 2,
+    text: `We got a new puppy. He was eight weeks old and very small. He fit in both my hands together.
+
+His name was Chip. He was brown with one white ear.
+
+But Chip was scared of everything. He was scared of the vacuum cleaner. He was scared of the postman. He was scared of plastic bags.
+
+When something scared him, he ran under the sofa and did not come out.
+
+Dad said, "He just needs time."
+
+I sat on the floor next to the sofa every day. I did not try to pull Chip out. I just sat there.
+
+After three days, Chip's little nose appeared from under the sofa. He sniffed my hand.
+
+On day five, he came out and sat next to me.
+
+On day seven, he climbed onto my lap.
+
+I didn't move for a long time because I didn't want him to leave.
+
+He fell asleep on my legs. His belly went up and down.
+
+Dad was right. He just needed time.
+
+And he needed someone to sit on the floor and wait.`
+  },
+  {
+    id: 34, level: 'a1', levelLabel: 'ילדים',
+    title: 'The School Play',
+    preview: 'Our class was going to do a play. I wanted the big part but I was very nervous...',
+    words: 166, mins: 2,
+    text: `Our class was going to do a play about a lion and a mouse. I wanted to play the lion. It was the biggest part.
+
+But when the teacher asked who wanted to try, I didn't raise my hand. I was scared.
+
+My friend Emma raised her hand and got the part.
+
+I felt sad. But also, a little relieved.
+
+I got the part of a tree. I had to stand very still and say one line: "The forest is old and wise."
+
+On the day of the play, I was still nervous. Even for one line.
+
+Emma forgot her words in the middle. The whole room was quiet.
+
+I whispered her line from behind my tree costume. She heard me and continued.
+
+After the play, she ran to me. "You saved me!" she said.
+
+I felt happier than if I had played the lion.
+
+Teacher said everyone did well. But she gave me a special smile.
+
+Maybe next year I'll raise my hand for the big part. Maybe.
+
+But I'm also okay with being the tree.`
+  },
+  {
+    id: 35, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Broken Window',
+    preview: 'I was playing football in the garden when it happened...',
+    words: 164, mins: 2,
+    text: `I was playing football in the garden when it happened. I kicked the ball hard and it went the wrong way. Crash. The kitchen window broke.
+
+My stomach dropped. I stood very still.
+
+Mom came outside. She looked at the window. Then she looked at me.
+
+I wanted to run. But my feet didn't move.
+
+"I did it," I said. "I kicked the ball and it went wrong. I'm sorry."
+
+Mom looked at me for a long time.
+
+"Thank you for telling me," she said.
+
+That was it. I was ready for her to be very angry. But she was just quiet.
+
+We went inside. She called someone to fix the window. I helped sweep the broken glass.
+
+At dinner, Mom told Dad what happened.
+
+"He told me right away," she said.
+
+Dad looked at me. "That was the right thing to do," he said.
+
+I know the window cost money. I know it was my fault.
+
+But telling the truth felt better than I expected.
+
+I think that's the whole point.`
+  },
+  {
+    id: 36, level: 'a1', levelLabel: 'ילדים',
+    title: 'The Ocean for the First Time',
+    preview: 'I had never seen the ocean before. We drove for four hours...',
+    words: 169, mins: 2,
+    text: `I had never seen the ocean before. We drove for four hours. My brother and I played games in the back seat.
+
+Then Dad said: "Look."
+
+I looked through the window. And there it was.
+
+The ocean. Big. So big. Blue-green and moving. Going all the way to the sky.
+
+I couldn't speak.
+
+We parked the car and I ran. I ran across the sand as fast as my legs could go. The sand was hot under my feet.
+
+Then I stopped at the edge. The water touched my toes. It was cold.
+
+A wave came. It knocked me down. I was soaking wet and full of sand.
+
+Mom was laughing from her chair. Dad ran in too.
+
+I stood up. The wave went back. I looked at the water.
+
+Another wave was coming.
+
+I opened my arms and let it hit me.
+
+Dad laughed. "You like it?"
+
+I thought of a word. "It's the biggest thing I've ever seen," I said.
+
+Dad nodded. "I know," he said. "That feeling never goes away."
+
+I hope he's right.`
+  },
+  {
+    id: 37, level: 'a1', levelLabel: 'ילדים',
+    title: 'Grandpa\'s Garden',
+    preview: 'My grandpa has a garden behind his house. It is his favourite place...',
+    words: 165, mins: 2,
+    text: `My grandpa has a garden behind his house. It is his favourite place in the world.
+
+He grows tomatoes, cucumbers, peppers, and herbs. In summer, everything is green and bright.
+
+When I visit, I help him. He shows me how to pull out the weeds — the plants we don't want — without hurting the ones we do want. It is harder than it looks.
+
+"How do you know which is which?" I ask.
+
+"Practice," he says. "And patience."
+
+We water the plants in the evening, when the sun is lower. Grandpa says morning or evening is best. Not in the middle of the day.
+
+I didn't know plants needed the right time.
+
+When the tomatoes are red and ready, Grandpa lets me pick them. He washes them and we eat them right there, standing in the garden, with a little salt.
+
+I never liked tomatoes from the supermarket. But Grandpa's tomatoes are different.
+
+"Because you grew them," he says.
+
+I don't know if that's the real reason. But it's a good one.`
+  },
+
+  // ── C1 extra ────────────────────────────────────────────────────────────
+  {
+    id: 64, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Photograph',
+    preview: 'The photograph had been in the drawer for twenty years, face down...',
+    words: 285, mins: 4,
+    text: `The photograph had been in the drawer for twenty years, face down. Not hidden exactly — anyone opening the drawer would have found it — but not displayed. Placed there with the conscious intention of neither keeping nor discarding.
+
+When Noa finally turned it over, her first reaction was not grief but surprise: she had remembered her mother as taller. The woman in the photograph was her own height, maybe slightly shorter, standing in front of a building Noa didn't recognise. She was laughing at something happening to the left of the frame.
+
+The photograph was dated on the back. Her mother had been thirty-four. Noa was thirty-six now.
+
+This was the thing that kept catching her: she had, at some point in the past three years, become older than her mother had been at several key moments. Older than she was when she married. Older than she was when she had Noa. She was now older than her mother in the photograph.
+
+There was no framework she knew for this reversal. Children are supposed to age within the context of parents who remain older — that is the natural order, the one the whole emotional architecture is built on. When it inverts, you are left with something that has no name.
+
+She sat with the photograph at the kitchen table for a long time.
+
+What she felt, eventually, was not sadness so much as longing for a conversation that could never happen. To speak to her mother now, adult to adult. To ask things. To compare notes on the experience of being thirty-four.
+
+She put the photograph on the windowsill. Face up.`
+  },
+  {
+    id: 65, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Translator',
+    preview: 'She had been translating between two languages for so long that she was no longer certain which was hers...',
+    words: 282, mins: 4,
+    text: `She had been translating between two languages for so long that she was no longer certain which was hers. Not in the sense of being confused — she was fluent in both, more than fluent — but in the sense that each language had colonised a different part of her interior life.
+
+She dreamed in Hebrew but argued in Russian. She read novels in English and thought about them in whichever language had more precise vocabulary for what she was thinking about. There were emotions she could articulate in one language that had no clean equivalent in the other.
+
+Her Russian friends said she had an Israeli quality they couldn't name. Her Israeli colleagues sometimes caught her pausing before a word in a way that was imperceptible but present.
+
+She found this neither loss nor gain. It was simply what she was.
+
+The harder question — the one she only encountered in very direct conversations with herself at two in the morning — was whether there was a version of herself underneath all the languages. Some core that predated the code-switching, the constant small translation work, the habit of thinking in translation even when she didn't need to.
+
+She had read that bilinguals often describe having different personalities in different languages — not different values, but different registers of self, different volumes, different emotional ranges.
+
+She found this accurate.
+
+What she had decided, provisionally, was that all of those registers were her. The question wasn't which self was real.
+
+The question was whether any single language was large enough to hold a person completely.
+
+Her answer, considered and revised many times, was no.`
+  },
+  {
+    id: 66, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'Inheritance',
+    preview: 'He had inherited his father\'s watch and his father\'s silence...',
+    words: 278, mins: 4,
+    text: `He had inherited his father's watch and his father's silence. Both came to him without instruction.
+
+The watch was straightforward — a mechanical thing that needed winding, that ran two minutes fast unless you left it on the table overnight. He learned its habits and adjusted for them. A practical inheritance.
+
+The silence was harder to understand.
+
+His father had been a contained man in the particular way that men of a certain generation were trained to be contained: outwardly stable, inwardly — what? Avi had never had reliable access to what was inwardly. His father communicated through presence and action rather than speech. He showed up. He fixed things. He was there, reliably, and that was a form of love that Avi had learned to read only retrospectively, after the fact.
+
+What he had not inherited was the ability to replicate it. He was not a silent man. He talked too much under stress, said things before they were ready, apologised twice when once would do.
+
+He had gone to some lengths to become the opposite of his father, and then, in his forties, found himself re-evaluating.
+
+There was something in the watch — in its small reliable mechanism, in the habit of winding it each morning — that he now understood as continuity. His father had done this every day. Now he did.
+
+It was not communication. But it was contact.
+
+Sometimes, Avi thought, the inheritance you least wanted turns out to be the one that fits you when you finally grow into it.`
+  },
+  {
+    id: 67, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Architecture of Goodbyes',
+    preview: 'Every departure has a structure, though we rarely notice it while we\'re inside it...',
+    words: 280, mins: 4,
+    text: `Every departure has a structure, though we rarely notice it while we're inside it. There is a first stage — the practical, list-making phase — where logistics substitute for feeling. There is a middle stage of exaggerated normality, during which everyone behaves as if nothing is ending and the effort of this performance is exhausting. And then there is the final hours, when the performance collapses and people say the things they've been composing for weeks in the shower.
+
+Lea had left three cities, two jobs, and one country. She had become, without intending to, something of an expert in departure.
+
+What she had learned was that the quality of a goodbye had very little to do with the relationship itself. Endings between close people were often worse — heavier, more inarticulate — than endings between acquaintances, where the form was clear and the expectations contained.
+
+The goodbye she remembered most was not a dramatic one. It was her last morning in her apartment in Berlin, already emptied, sitting on the floor drinking coffee from a paper cup because all her mugs were in boxes. Her downstairs neighbour knocked, having seen the moving van. She was an old woman who had lived there for forty years and they had barely spoken beyond pleasantries.
+
+"Are you leaving?" she said.
+
+"Yes. Today."
+
+The woman reached into her bag and handed her a small jar of jam. Plum, homemade, labelled in pencil.
+
+"For the road," she said.
+
+Lea had cried on the train, holding the jam jar, in a way she had not managed to cry at the proper goodbye events with friends.
+
+Small, specific, unplanned gestures. Those are the ones that travel with you.`
+  },
+  {
+    id: 68, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Other Version',
+    preview: 'She had, over the years, developed a clear sense of the life she had not chosen...',
+    words: 278, mins: 4,
+    text: `She had, over the years, developed a clear sense of the life she had not chosen. Not with regret — that was important to get right — but with a kind of fond awareness. There was a version of herself that had stayed in the north, married younger, had children earlier, kept close to the family she had been born into. That version was not worse. It was simply other.
+
+The life she had actually lived had taken her to three cities, through two serious relationships that ended for reasons she could still articulate, into a career she had found by a series of accidents that looked, in retrospect, like choices.
+
+She was not sure how much of a life was chosen and how much was gravity — the accumulation of small pulls, each individually imperceptible, that together drew you in a direction.
+
+At forty-two, she had started to notice that the question of the unchosen life was becoming less abstract and more tender. The hypothetical children would be teenagers now. The hypothetical house would have a garden with fruit trees of some size.
+
+She did not grieve this. That was still important to get right.
+
+But she had begun to carry it differently — not as loss but as a kind of widened understanding. That to choose one life is to be chosen by it. That the person you became is the person your particular path made available.
+
+And somewhere, in a northern city she sometimes drove through, the other version of herself lived something real and did not think about this at all.
+
+She found, increasingly, that she wished her well.`
+  },
+  {
+    id: 69, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Sound of a City',
+    preview: 'She had lived in the same apartment for twelve years without ever really hearing it...',
+    words: 276, mins: 4,
+    text: `She had lived in the same apartment for twelve years without ever really hearing it. The sounds of the street below had become so familiar as to have become silence — the morning delivery trucks, the children at the school around the corner at eight and three-fifteen, the particular quality of Friday afternoon that was different from every other afternoon without being describable.
+
+Then she lost her hearing in one ear. The adjustment was gradual and medical, not dramatic, and she was told it was likely temporary. But for three months, the world came to her differently — flattened spatially, the city arriving without its depth.
+
+What surprised her was not the loss but the noticing. Deprived of half the stereo, she found herself attending more carefully to what remained. She heard things she had stopped hearing. The way sound moved in the courtyard. The acoustic difference between rain on the street and rain on rooftops. The specific timbre of her neighbour's television at night.
+
+She began keeping a log. Not systematically — just notes on her phone. What she heard, and where, and what time. It became, accidentally, a record of a life conducted inside the same city for twelve years.
+
+When her hearing returned, mostly, she did not stop keeping the log. She was less diligent. But the habit of listening had changed.
+
+She thought about how attention worked: how deprivation could reopen perception that habit had closed.
+
+She wondered what else she was not hearing because it had been present for too long.`
+  },
+  {
+    id: 70, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Price of Certainty',
+    preview: 'The decision had taken three years and felt, when it finally arrived, not like resolution but like exhaustion...',
+    words: 280, mins: 4,
+    text: `The decision had taken three years and felt, when it finally arrived, not like resolution but like exhaustion. She had turned it over so many times, from so many angles, that by the end there were no new angles, and the turning was itself producing a kind of damage.
+
+She had wanted certainty. Not just confidence — actual certainty, the unambiguous knowledge that this was right and the alternative was wrong and she would not, at some point in the future, look back and see clearly that she had made the wrong call.
+
+What she eventually accepted was that this certainty was not on offer. Possibly for any decision of significance; certainly for this one.
+
+The philosopher in her reading group had a name for what she was experiencing: paralysis by the desire for optionality. The reluctance to close a path — any path — even one you didn't intend to walk. As long as a choice was unmade, both futures existed, and you could continue to inhabit the more comfortable of the two in imagination.
+
+Making the choice collapsed the wave function. You got one actual life and a set of extinguished possibilities.
+
+She made the decision on a Tuesday morning while standing in her kitchen waiting for coffee. Not because anything had changed. Because she had run out of reasons not to.
+
+Within a week, she noticed she was sleeping better.
+
+The future was now specific. Specific was smaller than possible. But it was real, and real turned out to be what she had actually been missing.`
+  },
+  {
+    id: 71, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'Night Swimming',
+    preview: 'He swam at five in the morning, before the pool opened to the public...',
+    words: 278, mins: 4,
+    text: `He swam at five in the morning, before the pool opened to the public. This was a privilege of his position — he managed the facility, and the hour before opening was technically his to use as he chose.
+
+He had started doing this fifteen years ago, during a period of considerable difficulty, and had simply never stopped. The habit had outlasted the difficulty by twelve years, which was perhaps a small proof that the rituals we adopt in crisis can become the structures that carry us afterward.
+
+The pool at five was different from the pool at any other time. The light was artificial and the water was entirely undisturbed. He was the only thing moving in it.
+
+He swam for forty minutes without counting laps. He had discovered, through much trial and error, that counting made the experience small — reduced it to a performance to be assessed. Without counting, the swimming became something else: a state rather than an activity.
+
+His thoughts moved differently in water. Problems that had seemed intractable at midnight became tractable at 5am while moving through water. He did not know if this was physiological or simply the effect of having slept, but he had stopped trying to separate the two.
+
+He was sixty-one years old. His knees hurt on the stairs. In water he did not feel sixty-one.
+
+He did not feel young. He felt, simply, present — which was, he had come to understand, entirely different.
+
+That was what he came for, every morning.
+
+Not the swimming. The presence.`
+  },
+  {
+    id: 72, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Editor',
+    preview: 'She had been editing other people\'s words for twenty-two years...',
+    words: 280, mins: 4,
+    text: `She had been editing other people's words for twenty-two years. She was very good at it and had, over time, developed a kind of split consciousness: one part of her reading for meaning and emotion, the other running a continuous diagnostic on structure, rhythm, and the precise weight of word choice.
+
+This was professionally useful and personally inconvenient. She could not read a novel, a menu, or a friend's text message without noticing where the language could be tighter. She had learned, mostly, not to say so.
+
+The work had given her something she had not anticipated: an intimate understanding of other people's minds. Writing is a record of how a person thinks, and she had spent two decades inside the writing of novelists, historians, scientists, politicians — mapping the topology of their thought, locating the places where it cohered and the places where it avoided cohering.
+
+What struck her, consistently, was how often the places where the writing failed were the places where the writer had not yet decided what they actually thought. Vagueness in language was almost always vagueness in mind. Clarity of expression was, in the first instance, clarity of understanding.
+
+She applied this, eventually, to herself. When she found herself writing or speaking vaguely — which happened when she was afraid or uncertain — she took it as a diagnostic. Not a failure. An indicator.
+
+She had trained herself to stop and ask: what am I not yet willing to say clearly?
+
+It was, she found, a useful question. Occasionally uncomfortable. Mostly useful.
+
+Language, she believed, knew more about you than you did.`
+  },
+  {
+    id: 73, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Empty Flat',
+    preview: 'For six months after the divorce, he lived in a flat that contained almost nothing...',
+    words: 276, mins: 4,
+    text: `For six months after the divorce, he lived in a flat that contained almost nothing. A mattress, a kettle, two mugs, and a box of books he had not unpacked. The rest was still in the house — her house now, as of the papers signed in a notary's office on a grey Wednesday.
+
+He had expected the emptiness to feel bad. What surprised him was that it mostly didn't.
+
+He woke up in a bare room and the bareness had a quality he couldn't quite name: absence, yes, but also possibility. Nothing was in the wrong place because there was no right place. Nothing needed to be maintained in a particular arrangement.
+
+His friends came and looked at the mattress and the mugs with visible concern.
+
+"You need furniture," they said.
+
+He agreed. Eventually.
+
+But for those six months, he lived inside the question of what he actually needed, stripped of the accumulated objects of a shared life. What he owned. What he wanted. What he had kept from habit and what he had kept from choice.
+
+He found the list was shorter than he had thought.
+
+He bought a chair first. Then a table. Then, eventually, other things — carefully, one at a time, each one considered. Nothing was bought because it had always been there. Everything was chosen.
+
+The flat that resulted was small and specific and entirely his. Not perfect. Not impressive. But chosen.
+
+He thought there was something in that approach he should probably apply elsewhere.
+
+He was working on it.`
+  },
+  {
+    id: 74, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'What We Keep',
+    preview: 'She had kept every letter her father wrote her over fifty years...',
+    words: 278, mins: 4,
+    text: `She had kept every letter her father wrote her over fifty years. Not consciously, in the beginning — letters simply accumulated in drawers and boxes and the particular category of envelope that you don't throw away because it contains a person, not just paper.
+
+After he died, she counted them. Eighty-three letters, spanning 1968 to 2019. She read them in order over three weeks.
+
+What she found surprised her. The letters from the early years were formal, almost awkward — he had been learning how to write to her, she realised, in the same way she had been learning to read him. By the seventies the tone loosened. By the eighties there were jokes, complaints about the news, small observations about the garden. The nineties produced the most personal letters, which coincided with the years she had been furthest away.
+
+What emerged, read in sequence, was a portrait of a relationship changing in real time — two people adjusting to one another across decades, across distance, across the ordinary accumulation of change that happens in a life.
+
+None of the individual letters would have told you much. The archive told you everything.
+
+She thought about this in relation to what she kept and what she discarded. The individual item is often unremarkable. The accumulated record is irreplaceable.
+
+She had been cleaning out her own drawers. She had been throwing things away.
+
+She stopped.
+
+She couldn't keep everything. But she could be more careful about what continuity required.
+
+She put the letters in a box. She labelled it. She put it somewhere safe.`
+  },
+  {
+    id: 75, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'Slow Work',
+    preview: 'The restoration took fourteen months. He had been warned it would take six...',
+    words: 276, mins: 4,
+    text: `The restoration took fourteen months. He had been warned it would take six, and he had believed this, having no experience with restoring eighteenth-century oil paintings and therefore no basis for doubt.
+
+By the third month, he had stopped expecting it to go quickly.
+
+He worked four days a week in a basement studio in the museum's conservation department. The light was controlled and constant. The work was done with tools that were, at their largest, the size of a pencil. Progress was measured in square centimetres.
+
+The painting was a large interior scene — a Dutch household, a woman reading by a window, a table in the foreground with objects that had become, over three centuries, nearly invisible under layers of varnish and overpainting.
+
+What he was doing, technically, was removing what was not original. This required knowing, with something close to certainty, what was original — which required research, which required infrared imaging, which required conversations with specialists in three countries.
+
+The work required a different quality of attention than he had practised before. Not concentration exactly — that was about effort. This was more like deep looking: the willingness to see what was actually there, rather than what you expected.
+
+He found it changed how he perceived other things. He began seeing overpainting everywhere — in conversations, in relationships, in his own habits of thought. The accumulation of what had been added on top of what was underneath.
+
+The question, in each case, was whether the original was worth recovering.
+
+Usually, he found, it was.`
+  },
+  {
+    id: 76, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Invisible Work',
+    preview: 'Nobody noticed when she did her job well. They noticed only when something went wrong...',
+    words: 275, mins: 4,
+    text: `Nobody noticed when she did her job well. They noticed only when something went wrong.
+
+She managed the infrastructure of a building — the systems behind the walls and beneath the floors, the things that functioned so reliably that their functioning was invisible. Elevators. Heating. Electrical. Water. The thousand small things that people in large buildings encountered every day without thought.
+
+When they worked, she was not there. When they failed, she was everyone's immediate concern.
+
+She had worked in building management for sixteen years and had become, over time, philosophical about this dynamic. It was not unique to her profession. Much of what kept a life functional — in families, in institutions, in cities — was performed by people whose success was measured by absence of failure.
+
+What she found interesting was the epistemology of it: the people who benefited most from the invisible work understood it least. They had no basis for imagining what went into the smooth delivery of things they had always received smoothly.
+
+She did not resent this. It was simply structural.
+
+What she had cultivated, instead, was a private satisfaction in the thing itself — not in recognition, but in competence. In the particular pleasure of a problem diagnosed correctly and solved before it became visible. In knowing, when she left a building at the end of the day, that it would function through the night in ways its occupants would never know.
+
+That was the work. It was enough to know you had done it.
+
+She had taken twenty years to believe this fully.
+
+Now she believed it.`
+  },
+  {
+    id: 77, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Understudied',
+    preview: 'He had been an understudy for three years. Not a bad position in itself...',
+    words: 276, mins: 4,
+    text: `He had been an understudy for three years. Not a bad position in itself — understudies learned the production completely, were paid, received credit — but defined by a structural readiness for something that almost certainly would not occur.
+
+He knew every word of the lead role. He had rehearsed every blocking decision, every entrance and exit, every tonal shift in the arc of the character. He knew, at any given moment during a performance, exactly where the lead actor was and what he was doing.
+
+He had gone on twice in three years. The first time because of illness, the second because of a personal emergency that he had never been told the nature of.
+
+Both times, the audience had not known in advance. Both times, he had been thanked warmly afterward. Both times, within forty-eight hours, it was over and the lead was back.
+
+He thought about preparedness a great deal — its costs and its particular rewards. You prepared for something that might not happen, and the preparation itself changed you. He was a better actor for having lived entirely inside another performance for three years. He had studied things in someone else's work that he would never have studied in his own.
+
+The question he returned to was whether this prepared him for the lead role or whether it had trained him to be secondary.
+
+He did not know the answer.
+
+He continued to prepare.
+
+Perhaps that was, itself, the answer.`
+  },
+  {
+    id: 78, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'Permission',
+    preview: 'At thirty-eight, she realised she had been waiting for permission that was not coming...',
+    words: 275, mins: 4,
+    text: `At thirty-eight, she realised she had been waiting for permission that was not coming.
+
+Not from any specific source. Not for any single thing. But a generalised waiting — the underlying orientation that there was someone, somewhere, whose approval was required before she could fully commit to the life she wanted.
+
+When she tried to locate the origin of this, she found it in several places simultaneously. A childhood in which praise was conditional. A professional culture that rewarded deference. A series of relationships in which she had made herself smaller than necessary as a gesture of accommodation.
+
+None of these were dramatic. That was part of the problem. The erosion of self-authorisation rarely comes from a single event. It comes from the accumulation of small adjustments, each individually reasonable, that together produce a person who checks outside herself before she checks inside.
+
+She was not in crisis. That was also worth saying. She had a life she largely valued. The realisation arrived not as emergency but as a quiet diagnostic, the kind you arrive at in an ordinary moment — standing in a kitchen, waiting for water to boil.
+
+What she decided, on the basis of no particular evidence except that it seemed to be true, was this: the permission was hers to give. It had always been hers. She had simply misdirected the request.
+
+She did not transform overnight. That would have been a different kind of story.
+
+But she began, systematically, to stop waiting.
+
+It turned out to be both easier and harder than she expected.
+
+Most true things are.`
+  },
+  {
+    id: 79, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The River',
+    preview: 'He had grown up near a river and thought about it often without knowing why...',
+    words: 277, mins: 4,
+    text: `He had grown up near a river and thought about it often without knowing why. The river was not beautiful in any postcard sense — it was a working river, industrial stretches alternating with overgrown banks, the water carrying more colour than it should. But he had walked along it most days of his childhood, and the habit had become, at some cellular level, his idea of ordinary.
+
+He lived in a city now, far from rivers, and had for fifteen years.
+
+When he went back — infrequently, for family occasions — he walked to the river. Always. Even in rain. Even when time was tight. Whatever was not possible was made possible for this.
+
+He found that standing at the riverbank produced a quality of stillness that he encountered nowhere else. Not peace exactly — peace implied the absence of turbulence, and the river was not peaceful. It was moving and indifferent and carried everything it was given.
+
+Something about the indifference was what he needed. The river was not interested in him. It would have been the same river if he had never been born.
+
+There was a particular release in standing before something that did not require anything of you.
+
+He had tried to explain this to people. The explanations sounded either trivial or mystical, neither of which was accurate.
+
+He had stopped trying to explain it.
+
+He went to the river. The river moved. He stood there until something in him settled.
+
+That was the whole of it.
+
+That was enough.`
+  },
+  {
+    id: 80, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Last Student',
+    preview: 'She had been teaching philosophy at the same university for thirty-one years...',
+    words: 278, mins: 4,
+    text: `She had been teaching philosophy at the same university for thirty-one years. In that time, she had watched the discipline fall in and out of administrative favour, had seen the students change in ways that were sometimes surprising and sometimes perfectly predictable, had lost three colleagues to other universities, one to illness.
+
+Her last seminar of the year had twelve students in it. The topic was personal identity — what makes you the same person over time, whether continuity of memory is sufficient, whether the self is a construction or a discovery.
+
+She had taught this course seventeen times. The material did not change, but the conversation always did.
+
+This year's group was unusually willing to argue. One student, a quiet young man who had said almost nothing for the first three weeks, delivered a reading response in the sixth week that reframed the entire question in a way she had not encountered before. Not because it was correct — correctness was not the point — but because it approached the problem from an angle that genuinely surprised her.
+
+She wrote a note in the margin of her own copy: *this is why you do this for thirty-one years.*
+
+After the final session, she sat in the empty room for a while. She did this every year. The same room, different each time in the way that the river is different each time.
+
+She was not sentimental about it. The work was the work.
+
+But she was grateful, and she allowed herself to feel that.
+
+Next year, again.`
+  },
+  {
+    id: 81, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Waiting Room',
+    preview: 'The hospital waiting room was designed, it seemed, for endurance rather than comfort...',
+    words: 278, mins: 4,
+    text: `The hospital waiting room was designed, it seemed, for endurance rather than comfort. The chairs were hard and bolted together in rows. The fluorescent light was the kind that flattens everything. The television in the corner played news, soundless, with subtitles that were two sentences behind.
+
+Tamar had been sitting here for three hours. Her mother was in surgery. The procedure was routine, as surgeries go — the doctors had said this several times, in several ways, which meant they were aware that it did not feel routine.
+
+She had brought a book. She had read the same page four times.
+
+Around her: a man in a construction jacket asleep in his chair, boots still on. A couple speaking quietly in Arabic. A teenage girl eating chips from a bag with systematic thoroughness.
+
+There was a solidarity to it, she thought. Not spoken. Nobody was talking to anyone. But everyone here was waiting for news about someone they could not be with, and the shared form of that — the particular shape of the waiting — created something.
+
+She thought about how ordinary this was. This room, these chairs, this wait — repeated daily, endlessly, in every hospital everywhere. Every person in it was inside what felt like a singular experience, and all of it was also the most common human thing.
+
+At four-fifteen, a doctor appeared.
+
+"Mrs. Tal?"
+
+She stood.
+
+"It went well. She's in recovery."
+
+Tamar sat back down for a moment, alone with the news before she called anyone.
+
+That moment, she thought, also belonged to her.`
+  },
+  {
+    id: 82, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Expert',
+    preview: 'He had become an expert gradually, and the expertise had changed him in ways he hadn\'t predicted...',
+    words: 276, mins: 4,
+    text: `He had become an expert gradually, and the expertise had changed him in ways he hadn't predicted. The knowledge itself was what he had expected — accumulated, refined, increasingly reliable. What he had not expected were the side effects.
+
+He had become a specialist in a narrow field. The narrowness was its own kind of depth. Over twenty years, he had developed an understanding of his subject that was genuinely unusual — he could see things others couldn't, notice what was absent as readily as what was present, draw connections across time and geography that were invisible to the uninitiated.
+
+The unexpected cost was what he sometimes thought of as category contamination. His specialist knowledge had started organising how he saw other things. He had trained himself to think in a particular way for particular purposes, and the training did not fully switch off in other contexts.
+
+He also noticed, more and more, the limits of what he knew. Paradoxically, expertise had made him less confident rather than more. Twenty years ago he had had opinions about many things. Now he had certainty about fewer things and better-grounded uncertainty about more.
+
+He had told a student once: "The more you know about a thing, the more precisely you can map what you don't know. Beginners have the luxury of not knowing what they're missing."
+
+The student had nodded politely in the way students do when they're not sure whether to be reassured.
+
+He hadn't meant it as a warning.
+
+But it was probably also a warning.`
+  },
+  {
+    id: 83, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'Small Pleasures',
+    preview: 'At forty-five, she had begun to notice small things with unusual intensity...',
+    words: 276, mins: 4,
+    text: `At forty-five, she had begun to notice small things with unusual intensity. The first good cup of coffee in the morning. The particular satisfaction of a paragraph that finally worked after three drafts. The sound of rain against a window she was sitting behind.
+
+She was not sure when this had started. Her forties had brought something she hadn't expected: an increased sensitivity to the texture of ordinary experience. Not happiness exactly. Something more like presence.
+
+She had been very future-oriented in her thirties — always planning, measuring progress, comparing the current state against a desired one. This had been productive in some ways. It had also produced a constant low-grade dissatisfaction, a sense that the present was merely transitional.
+
+At some point, this had shifted. She couldn't locate the event that caused it. More likely it was gradual — the accumulated evidence of enough time to know that the future, when it arrived, became ordinary too.
+
+What she had now was harder to name. An appreciation for things that didn't require appreciation — that would have continued without her noticing them. The quality of light at a specific hour. A good sentence encountered by chance. The feeling, after a long walk, of being tired in the right way.
+
+Her colleague, who was twenty-eight and in the future-oriented phase, asked her once: "How do you stay so calm?"
+
+She thought about it.
+
+"I stopped waiting for the good part," she said. "It turns out the good part is usually what's already happening."
+
+Her colleague considered this carefully.
+
+She had not expected him to believe it. That was fine. He would.`
+  },
+  {
+    id: 84, level: 'c1', levelLabel: 'C1 – קשה',
+    title: 'The Lesson',
+    preview: 'She had been his teacher for six years. At the end, she said something he didn\'t understand until much later...',
+    words: 274, mins: 4,
+    text: `She had been his teacher for six years. At the end, at his last lesson before he left for university, she said something he didn't understand until much later.
+
+She had been teaching him piano since he was eleven. By the end he was technically competent — better than most at his level, though not, she had been honest about this, destined for a professional career. He played with precision and reliability and without, she had occasionally said in her way, quite enough recklessness.
+
+At the last lesson, after the last piece, she was quiet for a moment.
+
+"You play safe," she said. Not unkindly. Observationally. "You've always played safe."
+
+He didn't know how to respond.
+
+"That's not an insult. Safe playing comes from listening — you're always checking whether you're within range. Most people never develop that kind of ear."
+
+A pause.
+
+"But there will be a point," she said, "when you have to play something without checking first whether it's right. You'll have the notes. You just have to trust them."
+
+He nodded in the way students nod when they are processing something they can't yet metabolise.
+
+He thought about it for years. Not always in relation to music. In fact, almost never in relation to music — by university he had mostly stopped playing.
+
+The statement had migrated, as the best things teachers say will migrate, from its original context into every relevant situation he encountered.
+
+He wrote her a letter, eventually. Fifteen years after the lesson.
+
+She remembered him.`
+  },
+
+  // ── C2 extra ────────────────────────────────────────────────────────────
+  {
+    id: 85, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'The Grammar of Loss',
+    preview: 'Grief, it turns out, has a syntax of its own...',
+    words: 305, mins: 5,
+    text: `Grief, it turns out, has a syntax of its own — one that resists the conventions of ordinary language while remaining entirely dependent on them. We say "I lost him," deploying the vocabulary of misplacement as though the person had been set down somewhere and could, in principle, be retrieved. We say "she is gone," using the intransitive as if departure were something the dead chose of their own volition, an act committed by them rather than upon us. The language we inherit for this experience is structured to soften, to distance, to convert event into metaphor before the event has fully registered.
+
+This is not dishonesty so much as accommodation. The naked statement — "he no longer exists in any form accessible to me, and he never will again" — is technically accurate but practically unbearable. Metaphor performs a service: it creates sufficient distance for the sentence to be completed.
+
+What interests me is not the metaphor itself but the moment when it stops being adequate. When the language of losing and going and leaving fails to hold what it is being asked to hold, and the words sit in the mouth feeling wrong in a way that is itself a kind of grief — the grief of articulation failing at precisely the moment it is most needed.
+
+The only recourse, I have found, is proximity. Not accuracy — accuracy is not the goal and may not be possible — but closeness. The willingness to say the hardest version and stay with the inadequacy of having said it.
+
+Language is not a container for experience. It is a gesture toward it.
+
+The gesture still matters. It may be all we have.`
+  },
+  {
+    id: 86, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'On Being Known',
+    preview: 'The desire to be known — genuinely known, not merely understood in outline — is among the most persistent...',
+    words: 302, mins: 5,
+    text: `The desire to be known — genuinely known, not merely understood in outline — is among the most persistent and most frequently disappointed of human wants. We communicate constantly, at extraordinary volume and with increasingly sophisticated tools, and yet the complaint of being fundamentally unseen is not diminishing. If anything, it has the quality of a condition exacerbated by the very remedies we reach for.
+
+The problem may be structural. What we call "knowing" a person is, in practice, a model — a working hypothesis, revised over time, never final. We predict from limited data. We interpolate where we have no information. We weight certain evidence over other evidence based on our own history rather than theirs. The person we claim to know is, to a significant extent, a collaborative fiction, authored as much by us as by them.
+
+This is not cynicism. The model can be sophisticated, attentive, long-revised, and genuinely useful for navigation. But it is not the same as the person.
+
+What, then, does the desire to be known actually want? Not, I think, to have an accurate model lodged in another person's mind — though that is part of it. But something more like this: to be in the presence of someone who is still asking. Who has not concluded. Who holds you open-endedly, as a question they remain curious about rather than a question they have answered.
+
+That quality — of continued curiosity, continued revision — is rarer than intelligence or sympathy or even love.
+
+It is also, perhaps, what love is actually for.`
+  },
+  {
+    id: 87, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'The Duration of Things',
+    preview: 'We tend to overestimate how long strong feelings last...',
+    words: 298, mins: 5,
+    text: `We tend to overestimate how long strong feelings last, and psychological research has confirmed what experience already suggests: that the intensity of emotional states — both positive and negative — decays faster than we predict it will. The technical term is affective forecasting error, and it is remarkably consistent across populations, cultures, and the full range of human emotion.
+
+We do not only fail to predict the speed of this decay; we fail to learn from it. Having repeatedly experienced that grief softens, that joy normalises, that fear diminishes, we nonetheless expect, the next time around, that this particular feeling will be different. That this one will persist at its current amplitude.
+
+The philosophical question this raises is not simply empirical. If our present emotional state is a poor guide to how we will feel in the future — which the evidence suggests it reliably is — then a significant proportion of our major decisions, which are made in states of high emotion, are being made on the basis of data that will not hold.
+
+This is not an argument for postponing decisions until emotional calm returns. Calm, too, is a state rather than a ground — it carries its own distortions, its own insensitivities.
+
+It is, rather, an invitation to hold even the most totalising feelings with a degree of epistemological lightness. Not to dismiss them — feelings are information — but to note that they have a duration, and that the duration is shorter than it feels.
+
+Knowing this does not make difficult feelings less difficult.
+
+But it does change your relationship to them in ways that accumulate over a lifetime.`
+  },
+  {
+    id: 88, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'What Stories Do',
+    preview: 'The oldest argument in favour of literature — that it builds empathy — is also the most contested...',
+    words: 300, mins: 5,
+    text: `The oldest argument in favour of literature — that it builds empathy — is also the most contested. The claim is intuitive but the evidence is, at best, complicated. People who read widely are not reliably kinder than people who don't; history offers abundant examples of voracious readers who nonetheless treated others with great cruelty. Empathy, it appears, is not a simple accumulation that reading deposits into the self.
+
+What stories may do, more precisely, is not increase empathy but expand the range of its potential application. Fiction familiarises you with the interior lives of people you would not otherwise encounter — not by providing access to something real, but by constructing imaginative approximations that make you practise the cognitive act of inhabiting a different perspective. Whether this practice transfers is not guaranteed. But it provides the structure within which transfer becomes possible.
+
+There is also a less frequently cited function, which I find more persuasive. Reading fiction trains you in the tolerance of ambiguity. Narrative withholds resolution; characters resist reduction; meaning accumulates laterally rather than building to a definitive point. The reader who finishes a serious novel and wants to know "but what does it mean?" has misunderstood the form. The novel does not conclude meaning; it proliferates it.
+
+This tolerance for the unresolved may be the most genuinely transferable skill that sustained reading builds. Not empathy exactly — but the capacity to hold complexity without demanding that it simplify into a verdict.
+
+In a culture increasingly structured around the demand for definitive positions, this seems worth defending.`
+  },
+  {
+    id: 89, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'Time and the City',
+    preview: 'Cities are, among other things, machines for making the past visible...',
+    words: 303, mins: 5,
+    text: `Cities are, among other things, machines for making the past visible. Walk through any sufficiently old city and you walk through a layered argument: this building replaced that one, which replaced an earlier structure whose outline is legible only in the shape of the street that curves to accommodate a foundation no longer there. The city is an accumulation of decisions — aesthetic, economic, political — each one made in conditions its makers understood partially, each one shaping the conditions for the decisions that came after.
+
+This is why cities resist the kind of comprehensive redesign that planners occasionally dream about. The planner works with a map — a synchronic representation, a flat projection of a complicated temporal object. The city is not flat. It has depth in the third dimension, which is time, and that depth exerts its own pressures on what the surface can tolerate.
+
+There is a school of thought that treats historical preservation as mere sentimentality — the privileging of the aesthetic preferences of the past over the practical needs of the present. This is not entirely wrong. Preservation can become a form of paralysis, a refusal to let the city continue to be the thing it has always been: a site of ongoing transformation.
+
+But there is a counterargument that is equally strong: that the legibility of a city's history is part of what makes it habitable. Not in a nostalgic sense, but in the sense that people need to live inside a narrative that extends beyond their own lifespan. The city that has erased its past offers its inhabitants only the present — which is, by itself, an insufficient foundation for a life.
+
+To know where you are, it helps to know what happened here.`
+  },
+  {
+    id: 90, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'Partial Knowledge',
+    preview: 'The condition of knowing a little about many things has become structurally unavoidable...',
+    words: 295, mins: 5,
+    text: `The condition of knowing a little about many things has become structurally unavoidable. The quantity of information in circulation, the speed of its production, and the degree to which public participation in civic and professional life requires at least superficial familiarity with an ever-expanding range of domains — all of this has produced a culture in which the confident non-expert has become the representative epistemic type.
+
+This is a different condition from ignorance. The ignorant person knows they don't know. The confident non-expert has enough information to have formed opinions, but not enough to have encountered the complexity that makes their opinions provisional. They exist, to use a well-worn metaphor, at the peak of Dunning-Kruger — enough knowledge to have eliminated the feeling of not-knowing, not enough to have reinstated it at a higher level of sophistication.
+
+The problem is not, as is sometimes suggested, remedied simply by access to more information. More information, without the conceptual infrastructure to evaluate it, does not produce expertise. It produces confidence — a different and frequently more dangerous thing.
+
+What expertise actually feels like, from the inside, is a peculiar combination of competence and humility: the ability to perform at a high level in a defined domain, combined with a fine-grained sense of where that domain ends and where one's own knowledge becomes thin.
+
+The tragedy of the current epistemic environment is not that people are uninformed. It is that the dominant reward structures — social, professional, algorithmic — consistently reward the performance of certainty over the far harder and more honest practice of calibrated uncertainty.
+
+Calibrated uncertainty is what good thinking looks like. We have made it unfashionable.`
+  },
+  {
+    id: 91, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'The Work of Attention',
+    preview: 'Attention is not a natural resource in the sense of being unlimited...',
+    words: 298, mins: 5,
+    text: `Attention is not a natural resource in the sense of being unlimited. It is more precisely a capacity — trainable, deployable, fatigable — whose distribution across the objects of the world is among the most consequential choices a person makes, largely without recognising them as choices at all.
+
+We have arrived, in the early decades of the twenty-first century, at a moment when the external pressures on attention are unprecedented in kind if not in intensity. Every era has had its distractions. What is distinctive about the present is the degree to which distraction has been industrialised — developed by teams of engineers using techniques drawn from behavioural psychology to produce systems optimised for the capture and retention of attention at scale.
+
+This is not a neutral development. Attention that is captured is not freely given. The quality of attention directed by compulsion or habit differs fundamentally from the quality of attention directed by choice: it is shallower, more reactive, less capable of the sustained engagement that difficult thinking requires.
+
+What I want to resist, however, is the conclusion that this makes contemplative attention an endangered species available only to those with sufficient privilege to withdraw from digital life. The problem is not technology per se but the question of whether technology is being used or using you — whether your attention is something you deploy or something that is deployed.
+
+The distinction is available in principle to anyone, though it requires, like most capacities worth having, sustained practice and considerable resistance to defaults.
+
+Simone Weil wrote that attention is the rarest and purest form of generosity. She was writing about something else, but the point holds.
+
+What you attend to, you honour. Choose accordingly.`
+  },
+  {
+    id: 92, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'Narrative and Truth',
+    preview: 'Human beings do not experience their lives as data. They experience them as stories...',
+    words: 296, mins: 5,
+    text: `Human beings do not experience their lives as data. They experience them as stories — with causation, character, meaning, and arc. This is not a cognitive failure. It is, in all probability, an adaptive feature: the story form allows experience to be encoded, transmitted, and acted upon far more efficiently than raw event-sequences would permit.
+
+The difficulty is that stories have structural requirements that reality does not share. Stories need coherence. They need — or strongly prefer — causation, where events lead to other events for reasons. They need characters who change or fail to change in ways that carry meaning. They need something that functions as resolution, even if it is only provisional.
+
+Reality, by contrast, is under no obligation to provide any of these things. Events occur adjacently without being causally linked. People behave in ways that are inconsistent with their previous behaviour and the most plausible explanation is chance or randomness rather than any meaningful development of character. Things do not resolve; they continue, or they simply stop.
+
+The autobiographical self — the narrative of who we are and what has happened to us — is therefore not a record but a construction. A selective attention to certain events over others, a retrospective imposition of causation, an ongoing editing process that preserves coherence at the cost of strict accuracy.
+
+This is not pathological. It is universal.
+
+What becomes pathological is the rigidity of the narrative — the inability to revise it in the face of evidence that contradicts it, the defensive maintenance of a story that no longer fits the person living it.
+
+Healthy self-knowledge may be less about the story you tell and more about your willingness to keep revising it.`
+  },
+  {
+    id: 93, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'The Limits of Introspection',
+    preview: 'We tend to treat introspection as a reliable method...',
+    words: 295, mins: 5,
+    text: `We tend to treat introspection as a reliable method: the assumption being that the most direct route to understanding why we do what we do is to look inward and report honestly on what we find. The appeal is obvious. Who would have better access to the workings of a mind than the mind itself?
+
+The evidence, however, is not encouraging. Decades of research in cognitive psychology suggest that our access to our own mental processes is substantially more limited than the intuition of direct access would imply. We confabulate — we construct post-hoc explanations for our behaviour that feel like accurate reports but are, in measurable ways, invented. We have no reliable introspective access to the processes that actually produce our decisions; we have access only to the outputs, and we build narratives around those outputs that are, at best, plausible hypotheses.
+
+This should not, I think, lead to the nihilist conclusion that self-knowledge is impossible or that introspection is worthless. Careful, sustained, and critically informed reflection on one's own patterns can accumulate into something useful, even if it operates differently from how we imagine it does.
+
+What it does suggest is that the single introspective report — the "I know why I did that because I checked" — is an insufficient basis for understanding. We need external evidence: the testimony of others, the pattern of our behaviour over time, the places where our explanations and our actions consistently diverge.
+
+Self-knowledge is not a single act of looking inward. It is a long-term project, conducted with imperfect instruments, subject to ongoing revision.
+
+That is also, perhaps, a fair description of most worthwhile projects.`
+  },
+  {
+    id: 94, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'Against Efficiency',
+    preview: 'Efficiency is a value that has escaped its domain...',
+    words: 297, mins: 5,
+    text: `Efficiency is a value that has escaped its domain. Originally — properly — a technical concept applied to systems and processes, a measure of output relative to input, it has migrated into the organisation of personal life, relationships, and increasingly the interior life itself, with consequences that deserve more critical attention than they typically receive.
+
+The problem is not efficiency per se. Efficiency within the appropriate domain is genuinely valuable: a well-organised system produces more with less waste, and there is nothing inherently wrong with wanting things to work well. The problem is category error — the application of efficiency as a criterion to activities that are not, in the relevant sense, productive, and that lose their value precisely when they are made to become so.
+
+Friendship, treated efficiently, becomes networking. Rest, optimised, becomes recovery for future productivity. Leisure is repackaged as self-improvement. The walk becomes the walk during which you listen to something educational. The meal becomes the meal at which you discuss something important.
+
+The structure of optimisation is to assign everything instrumental value — value in service of something else. What it systematically excludes is intrinsic value: the value of things that are worth doing for no reason other than themselves, that justify themselves by being what they are rather than by what they produce.
+
+Most of the things that make life feel worth living fall into this second category. Not all of them; but enough that the loss, if efficiency is applied universally, is serious.
+
+The correct question is not: "How can this be done better?"
+
+It is, first: "What kind of thing is this, and what does it ask of me?"
+
+That question is itself an act of resistance. It is also, I would argue, the beginning of wisdom.`
+  },
+  {
+    id: 95, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'Silence and Meaning',
+    preview: 'What is communicated by silence depends entirely on its context, and yet silence is often treated as though it were a single thing...',
+    words: 298, mins: 5,
+    text: `What is communicated by silence depends entirely on its context, and yet silence is often treated as though it were a single thing — absence, void, the space where language has failed or been withheld. This is a significant misreading. Silence is as varied as speech, as structured as syntax, as capable of precision as any explicitly formulated utterance.
+
+The silence that follows a declaration of love is doing something entirely different from the silence that follows an insult. The silence between two people who have known each other for decades is categorically distinct from the silence between two people who have just met. The silence a person keeps about their own suffering is not the same kind of silence as the one they keep about someone else's secret. Each of these silences communicates, though what it communicates can rarely be extracted and paraphrased without loss.
+
+Musicians understand this more instinctively than most. John Cage's infamous observation that all sounds are music applies, in the relevant sense, to silence as well: silence is not the absence of music but its most articulate form. The rests in a composition are not nothing. They are shaped by what comes before and after, and they do their work by that shaping.
+
+What I am interested in is the silence that is not strategic — not the silence of the poker player or the negotiator, not silence as withholding — but the silence that arrives when language has done what it can and something remains to be conveyed that language cannot hold.
+
+There are encounters, rare and not quite repeatable, in which the significant thing is transmitted in exactly this space.
+
+Those encounters are, I think, what intimacy actually is.`
+  },
+  {
+    id: 96, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'The Weight of the Optional',
+    preview: 'Choice, in sufficient quantity, is not liberating. It is exhausting...',
+    words: 296, mins: 5,
+    text: `Choice, in sufficient quantity, is not liberating. It is exhausting. This is among the more thoroughly documented findings in the psychology of decision-making, and among the most thoroughly ignored in the design of contemporary life.
+
+The mechanism is not complex. Every choice requires evaluation: alternatives must be identified, criteria applied, trade-offs assessed, and some version of the relative value of each option established. This process is cognitively costly regardless of how trivial the choice is. A morning spent making two dozen small decisions — what to eat, what to wear, which route to take, which messages to answer first — depletes the same resource that the afternoon will call on for more consequential choices.
+
+This resource depletion is not metaphorical. Experimental evidence suggests that the quality of decision-making declines measurably over the course of a day, and that the decline is steeper under conditions of high choice volume.
+
+There is a further cost that is less often discussed: the cost of optionality itself, independent of whether it is exercised. To know that a decision is reversible, that alternatives remain open, that tomorrow you could choose differently — this conditional structure imposes its own cognitive and emotional burden. Commitment is, among other things, a release from this burden. Deciding is, literally, a cutting-off of alternatives (from the Latin decidere), and the freedom produced by that cutting-off is real.
+
+The cultures and philosophies that have argued for the virtue of simplicity, voluntary limitation, and the reduction of choice were not advocating poverty of experience. They were recognising, I think, that freedom requires structure to become actual — that the infinite possibility of the fully open life is not freedom but formlessness.
+
+A well-chosen constraint can be the most liberating thing.`
+  },
+  {
+    id: 97, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'On Changing Your Mind',
+    preview: 'The public admission of having been wrong has become, in the current political and digital environment, a form of exposure...',
+    words: 298, mins: 5,
+    text: `The public admission of having been wrong has become, in the current political and digital environment, a form of exposure that many people — sensibly, given the incentives — work to avoid. Consistency is read as strength; revision as weakness; changing your mind in response to evidence as something that requires careful management if it cannot be avoided entirely.
+
+This is an environment that strongly selects against intellectual honesty.
+
+The philosopher who changes their position is accused of inconsistency. The scientist who revises their findings is cited as evidence of unreliability. The politician who updates their view in response to changed circumstances is described as a flip-flopper. What would elsewhere be called learning — the normal process by which minds in contact with evidence improve their models of the world — is reframed as character failure.
+
+The underlying assumption is that a person's views are properties of their identity rather than provisional conclusions of an ongoing inquiry. Under this assumption, revising a view is not updating an hypothesis; it is abandoning a self.
+
+This assumption is wrong, but it is socially powerful, and the social power is asymmetric: it is far more costly to change your mind visibly than to maintain a position past the point where you privately believe it.
+
+The result is a culture in which the gap between stated position and actual belief steadily widens; in which the performance of conviction substitutes for genuine conviction; in which the person who says "I used to think X but the evidence has led me to Y" is regarded with more suspicion than the person who has held the same confident position regardless of new evidence.
+
+Changing your mind, carefully and for reasons, is what thinking looks like.
+
+We have arranged to punish it.`
+  },
+  {
+    id: 98, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'The Body as Archive',
+    preview: 'Before language is fully acquired, experience is encoded in the body...',
+    words: 296, mins: 5,
+    text: `Before language is fully acquired, experience is encoded in the body. The infant's knowledge of the world is somatic: warmth, hunger, the specific texture of being held by a particular person. These encodings precede the ability to narrate them and therefore, in an important sense, precede the self — they constitute a substrate that the developing person will later build on, usually without access to what they are building on.
+
+Trauma theorists have long recognised that certain forms of experience resist linguistic encoding — that they are stored in the body as sensation, reflex, and physiological pattern rather than as memory in the narrative sense. This is not metaphorical. The body processes and stores some categories of experience differently from the cortical regions associated with explicit memory, and these different stores are activated differently, recalled differently, and respond to different interventions.
+
+What this means, practically, is that the autobiographical self — the story we tell about who we are and what has happened to us — is always built on a foundation it cannot fully see. The body knows things the narrative hasn't reached. Reactions that seem disproportionate to their immediate cause are often proportionate to something earlier, something registered below the threshold of language.
+
+I am interested in what follows from this for the project of self-knowledge. If significant portions of formative experience are not available to introspection in the ordinary sense — if they live in the body rather than in memory — then the route to understanding them is not primarily through language but through sensation, through pattern recognition, through attending to what the body does in circumstances that cannot account for it.
+
+This is slower work than thinking. But some things do not yield to thinking alone.`
+  },
+  {
+    id: 99, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'What Endures',
+    preview: 'Most things do not endure. This is worth sitting with...',
+    words: 297, mins: 5,
+    text: `Most things do not endure. This is worth sitting with before moving to the more consoling parts of the argument.
+
+The objects, institutions, relationships, and ideas that survive across time are vanishingly few relative to the totality of what has existed. Civilisations that seemed permanent from the inside are legible to us now only as ruins or scholarship or fragments of language absorbed into successor cultures. Languages that were once spoken by millions are now reconstructed from dedications on stone. Ideas that organised entire intellectual epochs have been so thoroughly superseded that even their vocabulary is no longer available to us without translation.
+
+The useful question is not why things do not endure — entropy and time are sufficient explanation — but what, given this, we are to make of the human investment in permanence. The monument, the archive, the masterwork explicitly designed to outlast its maker: these are, among other things, arguments against the condition described above. They are not naive arguments; the people who built the great cathedrals knew they would not see them finished, and worked anyway. They understood that the point was not personal survival but contribution to something with a longer lifespan than a single life.
+
+What I find interesting about this is not the monument but the motivation. The desire to have participated in something that continues — to be, in whatever attenuated form, part of what is carried forward — is one of the more distinctly human impulses I know of.
+
+It does not require that the contribution survive indefinitely. It requires only that it outlast the moment of making.
+
+That seems achievable. It also seems, given the alternative, worth attempting.`
+  },
+  {
+    id: 100, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'The Examined Life',
+    preview: 'Socrates\' famous claim that the unexamined life is not worth living has been...',
+    words: 302, mins: 5,
+    text: `Socrates' famous claim that the unexamined life is not worth living has been discussed, disputed, and contextualised for two and a half millennia, and perhaps the most important thing to note about it is that it was spoken at his trial, in defence of a life that had just been condemned to death. The remark was not a complacent maxim. It was a provocation, delivered to an audience who had decided that examining life — specifically, examining the assumptions of Athenian citizens in public, by questioning them — was itself a capital offence.
+
+The irony is instructive. The examined life, in this instance, had led to a death sentence. The question of whether it was worth living is answered, definitively, by its having been lived — by the fact that Socrates continued to examine, refused to stop when offered the choice, and accepted the consequences with what appears to have been genuine equanimity.
+
+What examination actually requires is harder to specify than the aphorism implies. It is not simply introspection — as already noted, introspection is a limited and unreliable method. It is not the keeping of journals, or the cultivation of an inner life, or any of the other activities that contemporary self-help culture associates with examined existence.
+
+What I take it to mean, at its most demanding, is a particular disposition toward one's own assumptions: the willingness to treat them as provisional, to apply to them the same critical scrutiny one would apply to claims made by others, to resist the natural impulse to exempt one's own comfortable beliefs from the standards one sets for everyone else's.
+
+This is genuinely difficult. It is also, I think, what intellectual honesty requires.
+
+Socrates was probably right. The cost is also real.`
+  },
+
+  // ── C2 – קשה מאד (original) ─────────────────────────────────────────────
+  {
+    id: 12, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'The Epistemology of Forgetting',
+    preview: 'There is a particular cruelty in the way memory abandons us selectively...',
+    words: 310, mins: 5,
+    text: `There is a particular cruelty in the way memory abandons us selectively — preserving the texture of an inconsequential afternoon in childhood while surrendering, without ceremony, the face of someone we once loved with a ferocity that restructured our entire conception of what it meant to want something.
+
+Neuroscience offers its consolations: memory, it turns out, is not archival but reconstructive. Each recollection is less a retrieval than a re-authoring, subject to the distortions of present mood, accumulated belief, and the subtle pressure of the story we have decided, consciously or otherwise, to tell about ourselves. What we remember, in other words, is not what happened. It is what we have made of what happened — a distinction that sounds philosophical until you find yourself arguing with a sibling about a family dinner from 1987, each of you equally certain, equally wrong, equally in possession of a memory that feels indistinguishable from fact.
+
+This should perhaps disturb us more than it does. If the self is substantially constituted by its autobiographical narrative, and that narrative is demonstrably unreliable, then the stability we attribute to personal identity becomes harder to defend. The person who remembers, and the person who is remembered, are not quite the same.
+
+And yet there is something almost merciful in this imprecision. The version of the past that survives is not random — it is, by and large, the version we can live with. The mind, left to its own devices, tends toward coherence rather than accuracy. It edits not out of dishonesty but out of a deep instinct for continuity, for the preservation of a self that can function in the present rather than be perpetually ambushed by the unprocessed residue of everything that has already happened.
+
+Forgetting, it turns out, is not a failure of memory. It is memory doing its actual job.`
+  },
+  {
+    id: 13, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'On the Aesthetics of Ruins',
+    preview: 'The ruin has always occupied an ambiguous position in the Western aesthetic imagination...',
+    words: 295, mins: 5,
+    text: `The ruin has always occupied an ambiguous position in the Western aesthetic imagination — simultaneously an object of melancholy and of desire, a site of loss that is also, perversely, a site of beauty. The eighteenth-century picturesque movement codified this response: painters and garden designers deliberately cultivated decrepitude, importing crumbling follies into manicured landscapes, framing decomposition as a species of the sublime. To contemplate a ruin was to contemplate time itself, and to find that contemplation pleasurable was to achieve a particular kind of philosophical distance from one's own mortality.
+
+What is less often remarked is the violence this aesthetic requires. The ruin is beautiful partly because it has been emptied. The Colosseum is photogenic in a way it never could have been when it smelled of blood and animals and fifty thousand bodies pressed together in the heat. The beauty of Pompeii depends entirely on the deaths that produced it; the preservation requires the catastrophe. We aestheticize what we have first sanitized, and we call this culture.
+
+This is not a counsel of paralysis. One cannot walk through Rome in a state of continuous moral alarm, nor would it be reasonable to expect that architecture should not outlast the politics that produced it. But the ease with which the aesthetic response suppresses the historical one deserves at least acknowledgment. When we stand before a ruin and feel something like awe, we are having a response that has been carefully prepared for us — by centuries of representational convention, by the selective survival of what happened to be made of stone, by the particular amnesias of the tradition within which we were educated.
+
+The question is not whether to look. It is whether to notice that we are being directed where to look, and to remain, even in the midst of the pleasure, slightly suspicious of our own gaze.`
+  },
+  {
+    id: 14, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'Thresholds',
+    preview: 'The philosopher Gaston Bachelard observed that the house is not merely a structure but a phenomenological category...',
+    words: 280, mins: 5,
+    text: `The philosopher Gaston Bachelard observed that the house is not merely a structure but a phenomenological category — a form through which human beings organize their experience of interiority and exposure, shelter and threshold, the private and the traversable. To be housed is not simply to have a roof; it is to have a spatial correlate for the self, a bounded volume within which one can become, temporarily and provisionally, opaque to the world.
+
+This is why displacement is experienced as something more than inconvenience. The refugee, the evicted tenant, the person whose childhood home has been demolished — these are not simply people who lack accommodation. They are people from whom a particular ontological scaffold has been removed, leaving the self exposed to a contingency it had successfully, if partially, forgotten about. Home is where we go to be off-duty from existence. Without it, the background noise of pure vulnerability becomes, suddenly, audible.
+
+I think about this in relation to the peculiar grief of returning to a place one has loved and finding it altered. The building stands; the address is unchanged; and yet the thing you went back for — the specific quality of afternoon light in a particular room, the smell of a hallway that encoded years of arrival and departure — is gone, replaced by renovation, by new occupants who have no interest in your history with their walls. The place has not disappeared. It has become indifferent to you. And there is a specific species of loneliness in being unknown by something that once knew you.
+
+Bachelard called the house a "tool for analysis of the human soul." What he might equally have said is that losing one teaches you how much of your soul you had, without realizing it, stored there.`
+  },
+  {
+    id: 15, level: 'c2', levelLabel: 'C2 – קשה מאד',
+    title: 'The Uses of Opacity',
+    preview: 'We live in a cultural moment that is deeply, perhaps pathologically, suspicious of privacy...',
+    words: 300, mins: 5,
+    text: `We live in a cultural moment that is deeply, perhaps pathologically, suspicious of privacy. Transparency has become a moral category — to be withheld, guarded, or simply reticent is to invite the inference that one has something to conceal, and to have something to conceal is to be, at minimum, untrustworthy. The confessional mode dominates public discourse, from the political apology performed for the camera to the social media post that aestheticizes intimacy into content. The person who declines to share is, by this logic, merely a person who has not yet been asked the right question.
+
+This is a recent and parochial view, even if it presents itself as a moral universal. Cultures and eras that valued discretion, formality, and the maintenance of social surface were not, for this reason, less honest. They had, rather, a different theory of where honesty was owed — to the particular, the proximate, the relationship of genuine trust — and a different sense of what the exposure of interiority actually accomplished. The performance of vulnerability is not the same as vulnerability; the narration of grief is not the same as grief; and the distinction matters more than we currently seem to think.
+
+There is, moreover, a case to be made for opacity that is not defensive but generative. The self requires some portion of the unshared in order to maintain the conditions of genuine reflection. What is immediately expressed is not processed; what is spoken before it is understood becomes, inevitably, a kind of theater. The private self — the one that exists in the gap between experience and articulation — is not a hidden self in the pejorative sense. It is the self that is still becoming something before the demand arrives to be already something finished.
+
+To protect that space is not dishonesty. It is the precondition of having something honest to eventually say.`
+  }
+];
+
+// ─── STATE ────────────────────────────────────────────────
+let apiKey = localStorage.getItem('story_api_key') || '';
+let currentWord = null;
+let selectedText = '';
+let wordCache = new Map();
+let currentStory = null;
+let selTimer = null;
+let readStories = new Set(JSON.parse(localStorage.getItem('read_stories') || '[]'));
+let currentFilter = 'all';
+
+// ─── INIT ─────────────────────────────────────────────────
+window.onload = () => {
+  if (apiKey) document.getElementById('apiKey').value = apiKey;
+  renderLibrary('all');
+  // Use mouseup on story body — captures selection before anything clears it
+  document.addEventListener('mouseup', (e) => {
+    // Don't interfere with sentence bar buttons
+    if (e.target.closest('#sentenceBar')) return;
+    setTimeout(checkSelection, 30);
+  });
+  document.addEventListener('click', handleDocClick);
+};
+
+function saveKey() {
+  apiKey = document.getElementById('apiKey').value.trim();
+  localStorage.setItem('story_api_key', apiKey);
+  const btn = document.querySelector('.save-btn');
+  btn.textContent = '✓ נשמר';
+  setTimeout(() => btn.textContent = 'שמור מפתח', 1500);
+}
+
+// ─── LIBRARY ──────────────────────────────────────────────
+function renderLibrary(filter) {
+  currentFilter = filter;
+  const grid = document.getElementById('storiesGrid');
+  let filtered;
+  if (filter === 'all') filtered = STORIES;
+  else if (filter === 'read') filtered = STORIES.filter(s => readStories.has(s.id));
+  else filtered = STORIES.filter(s => s.level === filter);
+
+  grid.innerHTML = filtered.map(s => {
+    const isRead = readStories.has(s.id);
+    return `
+    <div class="story-card ${s.level}${isRead ? ' read-card' : ''}" onclick="openStory(${s.id})">
+      ${isRead ? '<div class="read-badge">✓ נקרא</div>' : ''}
+      <div class="card-level">${s.levelLabel}</div>
+      <div class="card-title">${s.title}</div>
+      <div class="card-preview">${s.preview}</div>
+      <div class="card-meta">
+        <span>📖 ${s.words} words</span>
+        <span>⏱ ${s.mins} min</span>
+        <button class="read-btn" onclick="toggleRead(event,${s.id})">${isRead ? '✓ נקרא' : '☐ סמן כנקרא'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleRead(e, id) {
+  e.stopPropagation();
+  if (readStories.has(id)) readStories.delete(id);
+  else readStories.add(id);
+  localStorage.setItem('read_stories', JSON.stringify([...readStories]));
+  renderLibrary(currentFilter);
+}
+
+function filterStories(level, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLibrary(level);
+}
+
+// ─── READER ───────────────────────────────────────────────
+function openStory(id) {
+  currentStory = STORIES.find(s => s.id === id);
+  if (!currentStory) return;
+
+  document.getElementById('library').style.display = 'none';
+  const reader = document.getElementById('reader');
+  reader.style.display = 'block';
+
+  document.getElementById('readerTitle').textContent = currentStory.title;
+  const levelEl = document.getElementById('readerLevel');
+  levelEl.textContent = currentStory.levelLabel;
+  levelEl.className = 'reader-level';
+  levelEl.style.background = `var(--${currentStory.level}bg)`;
+  levelEl.style.color = `var(--${currentStory.level})`;
+
+  document.getElementById('storyBody').innerHTML = buildStoryHtml(currentStory.text);
+  wordCache.clear();
+  updateReaderReadBtn();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateReaderReadBtn() {
+  const btn = document.getElementById('readerReadBtn');
+  if (!btn || !currentStory) return;
+  const isRead = readStories.has(currentStory.id);
+  btn.textContent = isRead ? '✓ נקרא' : '☐ סמן כנקרא';
+  btn.style.borderColor = isRead ? '#43e97b' : '';
+  btn.style.color = isRead ? '#43e97b' : '';
+}
+
+function toggleReadFromReader() {
+  if (!currentStory) return;
+  if (readStories.has(currentStory.id)) readStories.delete(currentStory.id);
+  else readStories.add(currentStory.id);
+  localStorage.setItem('read_stories', JSON.stringify([...readStories]));
+  updateReaderReadBtn();
+}
+
+function buildStoryHtml(text) {
+  const paragraphs = text.split('\n').filter(p => p.trim());
+  return paragraphs.map((para, i) => {
+    const words = para.split(/(\s+)/);
+    const html = words.map(part => {
+      if (/^\s+$/.test(part)) return part;
+      const clean = part.replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '');
+      if (!clean) return escHtml(part);
+      return `<span class="word" data-word="${escAttr(clean)}" onclick="clickWord(this)">${escHtml(part)}</span>`;
+    }).join('');
+    return `<div class="para-wrap">
+      <p data-para="${escAttr(para)}">${html}</p>
+      <button class="para-translate-btn" onclick="translatePara(this, ${i})">🌐 תרגם פסקה</button>
+      <div class="para-translation" id="para-tr-${i}"></div>
+    </div>`;
+  }).join('');
+}
+
+function backToLibrary() {
+  document.getElementById('reader').style.display = 'none';
+  document.getElementById('library').style.display = 'block';
+  hideTooltip();
+  dismissBar();
+  currentStory = null;
+}
+
+// ─── WORD CLICK ───────────────────────────────────────────
+async function clickWord(el) {
+  const word = el.dataset.word;
+  if (!word || word.length < 2) return;
+
+  // hide sentence bar if open
+  dismissBar();
+
+  const tooltip = document.getElementById('wordTooltip');
+  if (tooltip.classList.contains('visible') && currentWord === word) {
+    hideTooltip(); return;
+  }
+
+  currentWord = word;
+  const rect = el.getBoundingClientRect();
+  const sentence = el.closest('p')?.textContent?.trim() || '';
+
+  document.getElementById('tooltipHeb').textContent = '...';
+  document.getElementById('tooltipEng').textContent = word;
+  positionTooltip(rect);
+  tooltip.classList.add('visible');
+
+  const cacheKey = word.toLowerCase() + '|' + sentence.slice(0, 60);
+  if (wordCache.has(cacheKey)) {
+    document.getElementById('tooltipHeb').textContent = wordCache.get(cacheKey);
+    return;
+  }
+
+  try {
+    const key = apiKey || document.getElementById('apiKey').value.trim();
+    if (!key) { document.getElementById('tooltipHeb').textContent = '← הוסף API Key'; return; }
+
+    const heb = await translateWord(word, sentence, key);
+    wordCache.set(cacheKey, heb);
+    if (currentWord === word) {
+      document.getElementById('tooltipHeb').textContent = heb;
+      el.classList.add('translated');
+    }
+  } catch(e) {
+    if (currentWord === word) document.getElementById('tooltipHeb').textContent = '⚠️ ' + (e.message || 'שגיאה');
+  }
+}
+
+function positionTooltip(rect) {
+  const tooltip = document.getElementById('wordTooltip');
+  tooltip.style.left = '0'; tooltip.style.top = '0';
+
+  const tw = 180, th = 60;
+  let left = rect.left + rect.width / 2 - tw / 2;
+  let top = rect.top - th - 10 + window.scrollY;
+
+  if (left < 8) left = 8;
+  if (left + tw > window.innerWidth - 8) left = window.innerWidth - tw - 8;
+  if (top < window.scrollY + 8) top = rect.bottom + 10 + window.scrollY;
+
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
+}
+
+function hideTooltip() {
+  document.getElementById('wordTooltip').classList.remove('visible');
+  currentWord = null;
+}
+
+function handleDocClick(e) {
+  if (!e.target.classList.contains('word') && !document.getElementById('wordTooltip').contains(e.target)) {
+    hideTooltip();
+  }
+}
+
+// ─── PARAGRAPH TRANSLATE ──────────────────────────────────
+async function translatePara(btn, idx) {
+  const paraEl = btn.previousElementSibling;
+  const resultEl = document.getElementById('para-tr-' + idx);
+  const paraText = paraEl.dataset.para || paraEl.textContent;
+
+  // Toggle — if already translated, hide
+  if (resultEl.classList.contains('visible')) {
+    resultEl.classList.remove('visible');
+    btn.textContent = '🌐 תרגם פסקה';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const key = apiKey || document.getElementById('apiKey').value.trim();
+    if (!key) { resultEl.textContent = '← הוסף API Key'; resultEl.classList.add('visible'); btn.disabled = false; btn.textContent = '🌐 תרגם פסקה'; return; }
+
+    // Use cache
+    if (resultEl.dataset.cached) {
+      resultEl.classList.add('visible');
+      btn.textContent = '🔼 הסתר';
+      btn.disabled = false;
+      return;
+    }
+
+    const heb = await translateText(paraText, key);
+    resultEl.textContent = heb;
+    resultEl.dataset.cached = '1';
+    resultEl.classList.add('visible');
+    btn.textContent = '🔼 הסתר';
+  } catch(e) {
+    resultEl.textContent = '⚠️ ' + (e.message || 'שגיאה');
+    resultEl.classList.add('visible');
+    btn.textContent = '🌐 תרגם פסקה';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function dismissBar() {}
+
+// ─── API ──────────────────────────────────────────────────
+async function gemini(prompt, _unused, key, maxTokens) {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${key}`
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `שגיאת API: ${res.status}`);
+  }
+  const data = await res.json();
+  return data.choices[0].message.content.trim();
+}
+
+async function translateWord(word, sentence, key) {
+  const prompt = `You are a precise English-Hebrew dictionary for language learners.
+Translate the English word "${word}" to Hebrew.
+${sentence ? `It appears in this sentence: "${sentence}"` : ''}
+Rules:
+- Reply with ONLY the Hebrew word or short phrase — nothing else
+- Be exact and dictionary-accurate: e.g. "unemployed" → מובטל, "salary" → משכורת, "exhausted" → מותש
+- If the word has one clear Hebrew equivalent, give that. Do NOT paraphrase.
+- Maximum 3 Hebrew words. No punctuation. No explanations.`;
+  return gemini(prompt, '', key, 30);
+}
+
+async function translateText(text, key) {
+  return gemini(
+    `You are a professional Hebrew translator. Translate the following English text into natural, fluent Hebrew — as if it were originally written in Hebrew. Do NOT translate word-for-word. Use natural Hebrew sentence structure and phrasing. Reply with ONLY the Hebrew translation, nothing else.\n\nText to translate:\n${text}`,
+    '', key, 400
+  );
+}
+
+// ─── UTILS ────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(s) {
+  return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
