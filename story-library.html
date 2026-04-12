@@ -3255,15 +3255,21 @@ async function clickWord(el) {
 
 function positionTooltip(rect) {
   const tooltip = document.getElementById('wordTooltip');
-  tooltip.style.left = '0'; tooltip.style.top = '0';
+  const tw = 200, th = 64;
 
-  const tw = 180, th = 60;
+  // position: fixed — viewport coords only, no scrollY
   let left = rect.left + rect.width / 2 - tw / 2;
-  let top = rect.top - th - 10 + window.scrollY;
+  let top = rect.top - th - 10;
 
+  // keep inside viewport horizontally
   if (left < 8) left = 8;
   if (left + tw > window.innerWidth - 8) left = window.innerWidth - tw - 8;
-  if (top < window.scrollY + 8) top = rect.bottom + 10 + window.scrollY;
+
+  // if too high — show below the word instead
+  if (top < 8) top = rect.bottom + 10;
+
+  // if too low — clamp to bottom of screen
+  if (top + th > window.innerHeight - 8) top = window.innerHeight - th - 8;
 
   tooltip.style.left = left + 'px';
   tooltip.style.top = top + 'px';
